@@ -27,9 +27,32 @@
         .font-mono {
             font-family: 'JetBrains Mono', monospace;
         }
+        
+        /* Custom scrollbar for diagnostic terminal */
+        #diagnostic-output::-webkit-scrollbar { width: 6px; }
+        #diagnostic-output::-webkit-scrollbar-track { background: rgba(3, 7, 18, 0.5); border-radius: 3px; }
+        #diagnostic-output::-webkit-scrollbar-thumb { background: #f43f5e; border-radius: 3px; } /* rose-500 */
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(5px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
     </style>
 </head>
-<body class="bg-slate-950 text-slate-100 min-h-screen flex flex-col justify-between selection:bg-rose-500 selection:text-white">
+<body class="bg-slate-950 text-slate-100 min-h-screen flex flex-col justify-between selection:bg-rose-500 selection:text-white relative">
+
+    <!-- Diagnostic Terminal Overlay (Hidden by default) -->
+    <div id="diagnostic-modal" class="fixed inset-0 bg-slate-950/95 backdrop-blur-md hidden flex-col items-center justify-center z-[100] p-4">
+        <div class="bg-black border border-rose-500/30 rounded-xl p-6 w-full max-w-2xl shadow-[0_0_30px_rgba(244,63,94,0.15)]">
+            <div class="flex justify-between items-center border-b border-slate-800 pb-3 mb-4">
+                <span class="text-rose-400 font-mono font-bold tracking-wider text-sm">[ SYSTEM DIAGNOSTICS ACTIVE ]</span>
+                <button onclick="closeDiagnostics()" class="text-slate-500 hover:text-white font-mono text-xs transition">[ TERMINATE ]</button>
+            </div>
+            <div id="diagnostic-output" class="font-mono text-xs sm:text-sm space-y-2 h-48 overflow-y-auto text-emerald-400">
+                <!-- Text gets injected here dynamically -->
+            </div>
+        </div>
+    </div>
 
     <!-- Top Bar / Anti-Censorship Notice -->
     <header class="w-full border-b border-slate-800/60 bg-slate-950/80 backdrop-blur-md sticky top-0 z-50 px-6 py-3 flex items-center justify-between">
@@ -47,7 +70,7 @@
     <!-- Main Hero Section -->
     <main class="max-w-7xl mx-auto px-6 py-12 lg:py-20 grid grid-cols-1 lg:grid-cols-12 gap-12 items-center flex-grow">
         
-        <!-- Left Column: Manifesto & Newsletter -->
+        <!-- Left Column: Manifesto & Controls -->
         <div class="lg:col-span-7 space-y-8">
             <div class="space-y-4">
                 <h1 class="text-3xl sm:text-5xl lg:text-6xl font-extrabold tracking-tight text-white leading-none">
@@ -62,12 +85,29 @@
             <div class="bg-slate-900/60 border border-slate-800 p-6 rounded-2xl max-w-xl backdrop-blur-sm shadow-xl">
                 <h3 class="text-sm font-bold uppercase tracking-wider text-white font-mono mb-2">Join the Sovereign List</h3>
                 <p class="text-xs text-slate-400 mb-4">Get direct dispatches, book drops, and raw essays straight to your inbox without algorithmic middlemen.</p>
-                <form class="flex flex-col sm:flex-row gap-3">
-                    <input type="email" placeholder="Enter secure email address..." class="bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-sm text-white placeholder-slate-500 focus:outline-none focus:border-rose-500 flex-grow transition-colors" required>
+                
+                <!-- Web3Forms Enabled Form -->
+                <form action="https://api.web3forms.com/submit" method="POST" class="flex flex-col sm:flex-row gap-3">
+                    <input type="hidden" name="access_key" value="45027178-9e1b-461f-b42f-5dfa3bc5dbd">
+                    <input type="email" name="email" placeholder="Enter secure email address..." class="bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-sm text-white placeholder-slate-500 focus:outline-none focus:border-rose-500 flex-grow transition-colors" required>
                     <button type="submit" class="bg-rose-600 hover:bg-rose-500 text-white text-sm font-bold px-6 py-3 rounded-xl transition-all shadow-lg shadow-rose-600/20 cursor-pointer">
                         Secure Entry
                     </button>
                 </form>
+            </div>
+
+            <!-- System Node Controls -->
+            <div class="flex flex-wrap gap-3 items-center pt-2">
+                <a href="flipbook/index.html" class="px-5 py-2.5 rounded-xl bg-slate-800 border border-slate-700 text-white font-bold hover:bg-slate-700 hover:border-rose-500 transition-all font-mono text-xs shadow-lg flex items-center">
+                    <span class="w-2 h-2 rounded-full bg-rose-500 mr-2 animate-pulse"></span>
+                    Launch Flipbook Module &rarr;
+                </a>
+                <button onclick="runDiagnostics()" class="px-5 py-2.5 rounded-xl bg-slate-900/80 border border-slate-800 text-slate-400 hover:text-white hover:border-slate-600 transition-all font-mono text-xs">
+                    System Diagnostics
+                </button>
+                <button onclick="testAudioFeed()" id="audio-btn" class="px-5 py-2.5 rounded-xl bg-slate-900/80 border border-slate-800 text-slate-400 hover:text-rose-400 hover:border-rose-500/50 transition-all font-mono text-xs">
+                    Test Audio Feed
+                </button>
             </div>
         </div>
 
@@ -134,5 +174,73 @@
         </div>
     </footer>
 
+    <!-- Logic Scripts for Diagnostics and Audio -->
+    <script>
+        // Diagnostic Terminal Logic
+        let diagTimeout;
+        function runDiagnostics() {
+            const modal = document.getElementById('diagnostic-modal');
+            const output = document.getElementById('diagnostic-output');
+            
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
+            output.innerHTML = ''; 
+
+            const lines = [
+                "> INITIATING SOVEREIGN NODE BYPASS PROTOCOLS...",
+                "> CHECKING LOCAL DIRECTORY LINKS........ [ OK ]",
+                "> VERIFYING MEDIA ASSETS................ [ OK ]",
+                "> SCANNING FLIPBOOK MANUSCRIPT INDEX.... [ SECURED ]",
+                "> PINGING SUB-FREQUENCY AUDIO CHANNELS.. [ ESTABLISHED ]",
+                "> ALL SYSTEMS NOMINAL. DIGITAL HUB ACTIVE."
+            ];
+
+            let delay = 0;
+            lines.forEach((line, index) => {
+                diagTimeout = setTimeout(() => {
+                    output.innerHTML += `<p class="mb-1 opacity-0 animate-[fadeIn_0.3s_forwards]">${line}</p>`;
+                    output.scrollTop = output.scrollHeight;
+                }, delay);
+                delay += 800; // Type next line every 800ms
+            });
+        }
+
+        function closeDiagnostics() {
+            const modal = document.getElementById('diagnostic-modal');
+            modal.classList.add('hidden');
+            modal.classList.remove('flex');
+            clearTimeout(diagTimeout); // Stop typing if closed early
+        }
+
+        // Audio Feed Logic
+        function testAudioFeed() {
+            const btn = document.getElementById('audio-btn');
+            const originalText = "Test Audio Feed";
+            
+            // Visual feedback on button
+            btn.innerHTML = "PLAYING FEED...";
+            btn.classList.add('text-rose-400', 'border-rose-500/50');
+
+            // Play the t3_cpu.wav file
+            const audio = new Audio('t3_cpu.wav');
+            
+            audio.play().catch(e => {
+                console.log("Audio file not found, falling back to speech synthesis.");
+                const msg = new SpeechSynthesisUtterance("Audio feed sub-frequency channel active. Synthesizer handshake successful.");
+                msg.rate = 1.0;
+                msg.pitch = 0.9;
+                
+                msg.onend = resetBtn;
+                window.speechSynthesis.speak(msg);
+            });
+
+            audio.onended = resetBtn;
+
+            function resetBtn() {
+                btn.innerHTML = originalText;
+                btn.classList.remove('text-rose-400', 'border-rose-500/50');
+            }
+        }
+    </script>
 </body>
 </html>

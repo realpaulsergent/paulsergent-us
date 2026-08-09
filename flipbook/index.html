@@ -1,0 +1,325 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>CC.Metaverse | E-Book Studio & Reader</title>
+    <style>
+        body {
+            background-color: #030712;
+            color: #f3f4f6;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            margin: 0;
+            background-image: linear-gradient(to right, rgba(6, 182, 212, 0.05) 1px, transparent 1px),
+                              linear-gradient(to bottom, rgba(6, 182, 212, 0.05) 1px, transparent 1px);
+            background-size: 24px 24px;
+        }
+        .container {
+            width: 900px;
+            background: linear-gradient(135deg, rgba(11, 15, 25, 0.95), rgba(3, 7, 18, 0.95));
+            border: 1px solid rgba(6, 182, 212, 0.4);
+            padding: 35px;
+            border-radius: 12px;
+            box-shadow: 0 0 30px rgba(6, 182, 212, 0.15);
+            position: relative;
+        }
+        h1 { color: #06b6d4; margin-top: 0; text-align: center; font-size: 24px; letter-spacing: 1px; }
+        
+        .visual-display {
+            width: 100%;
+            height: 300px;
+            background: #000;
+            border: 1px solid rgba(6, 182, 212, 0.3);
+            border-radius: 8px;
+            overflow: hidden;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 20px;
+            position: relative;
+        }
+        .visual-display img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .content-box { 
+            background: rgba(15, 23, 42, 0.6);
+            border: 1px solid rgba(255,255,255,0.08);
+            padding: 25px;
+            border-radius: 8px;
+            height: 200px; 
+            overflow-y: auto; 
+            line-height: 1.8;
+            font-size: 15px;
+            color: #cbd5e1;
+            margin-bottom: 15px;
+        }
+        
+        .content-box::-webkit-scrollbar { width: 8px; }
+        .content-box::-webkit-scrollbar-track { background: rgba(3, 7, 18, 0.5); border-radius: 4px; }
+        .content-box::-webkit-scrollbar-thumb { background: rgba(6, 182, 212, 0.5); border-radius: 4px; }
+        .content-box::-webkit-scrollbar-thumb:hover { background: rgba(6, 182, 212, 0.8); }
+
+        .editor-panel {
+            background: rgba(15, 23, 42, 0.95);
+            border: 1px dashed #06b6d4;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 15px;
+            display: none;
+        }
+        .editor-panel input, .editor-panel textarea {
+            width: 100%;
+            background: #030712;
+            border: 1px solid #334155;
+            color: #fff;
+            padding: 8px;
+            border-radius: 4px;
+            margin-top: 5px;
+            margin-bottom: 10px;
+            font-family: inherit;
+            box-sizing: border-box;
+        }
+        .editor-panel textarea { height: 80px; resize: vertical; }
+
+        .nav { 
+            display: flex; 
+            justify-content: space-between; 
+            align-items: center;
+            border-top: 1px solid rgba(255,255,255,0.1);
+            padding-top: 20px;
+        }
+        button {
+            background: #06b6d4;
+            color: #030712;
+            border: none;
+            padding: 10px 18px;
+            font-weight: bold;
+            cursor: pointer;
+            border-radius: 6px;
+            font-family: monospace;
+            transition: all 0.2s;
+        }
+        button:hover { background: #22d3ee; box-shadow: 0 0 10px rgba(6, 182, 212, 0.5); }
+        .audio-btn { background: #ec4899; color: #fff; width: 160px; text-align: center; }
+        .audio-btn:hover { background: #f472b6; }
+        .top-btn { background: rgba(255,255,255,0.1); color: #cbd5e1; border: 1px solid rgba(255,255,255,0.2); padding: 6px 12px; font-size: 12px;}
+        .top-btn:hover { background: rgba(255,255,255,0.2); color: #fff; }
+        
+        a { color: #94a3b8; text-decoration: none; font-family: monospace; font-size: 12px; }
+        a:hover { color: #06b6d4; }
+        .page-counter { font-family: monospace; color: #64748b; font-size: 13px; }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;">
+            <a href="../index.html">&larr; Return to Home Node</a>
+            <div style="display:flex; gap:10px;">
+                <button class="top-btn" onclick="saveBookmark()">🔖 Bookmark Page</button>
+                <button class="top-btn" onclick="toggleEditor()">⚙️ Toggle Editor</button>
+            </div>
+        </div>
+        
+        <h1>Stellar Odyssey // Rise of the Patrol</h1>
+        
+        <!-- Visual Display Panel -->
+        <div class="visual-display" id="visual-container">
+            <img id="page-image" src="" alt="Page Illustration">
+        </div>
+
+        <!-- Inline Editor Form -->
+        <div class="editor-panel" id="editor-form">
+            <label style="font-size:12px; color:#06b6d4; font-family:monospace;">EDIT PAGE TITLE:</label>
+            <input type="text" id="edit-title">
+            <label style="font-size:12px; color:#06b6d4; font-family:monospace;">EDIT IMAGE FILENAME / URL:</label>
+            <input type="text" id="edit-img">
+            <label style="font-size:12px; color:#06b6d4; font-family:monospace;">EDIT PAGE TEXT / PARAGRAPH:</label>
+            <textarea id="edit-text"></textarea>
+            <button onclick="savePageChanges()" style="background:#10b981; color:#fff;">Save Temporary Changes</button>
+        </div>
+
+        <!-- Text Content Box -->
+        <div id="book-content" class="content-box">
+            Loading manuscript...
+        </div>
+
+        <div class="nav">
+            <div>
+                <button class="audio-btn" id="audio-control-btn" onclick="toggleAudio()">🔊 Play Audio</button>
+            </div>
+            <span class="page-counter" id="counter">PAGE 1 / 3</span>
+            <div>
+                <button onclick="prevPage()">&larr; Prev</button>
+                <button onclick="nextPage()">Next &rarr;</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Permanent Book Data with Full Length Paragraphs for all Pages
+        let pages = [
+            {
+                title: "Book Cover & Introduction",
+                image: "images/cover.png", 
+                text: "The dust of the newly inhabited moon—the larger of the system’s twin moons—settled quietly around Captain Elana Vance as she and her landing crew set foot upon the barren surface. Tilting her head back, she stared up into the expanse at the majestic shape hovering above them. The Starship Gemos glowed with a stark, emerald light, casting long, dramatic shadows across the moon’s stark terrain. Beside her, the crew’s faces were taut with anticipation and nervous energy.<br><br>On the distant horizon, a spectacle of cosmic anomalies pulsed with unsettling power, painting the sector in hues of vibrant, terrifying purple. Whispers of gravitational distortions and temporal shifts rippled through their comms, echoing the unease that settled heavy in the pit of every stomach. Yet, at the heart of this swirling chaos, standing firm on the lunar soil beneath her ship, Captain Elana Vance stood resolute. Her unflinching gaze and calm, commanding presence served as a beacon of courage against the looming unknown.<br><br>With a silent nod to her crew, she signaled the bridge overhead. The colossal vessel—a vanguard of hope and humanity—surged forward into the abyss. Its mighty engines roared a fierce defiance against the cosmic tempest, propelling the ship deeper into the untamed, uncharted territories of space, where discovery and danger danced a perilous waltz."
+            },
+            {
+                title: "Sector 4 - Asteroid Field Patrol",
+                image: "images/page2.png",
+                text: "Navigating through the dense asteroid clusters of Sector 4 required absolute precision, testing the limits of the Gemos’s navigation systems. The twin thrusters hummed with a steady, reassuring resonance, vibrating through the deck plates as Captain Vance guided the vessel deeper into the jagged debris field. Outside the viewport, massive chunks of ancient, pulverized planets spun in a chaotic dance, their cratered surfaces catching the harsh light of distant stars.<br><br>The bridge crew worked in synchronized harmony, calling out telemetry data and adjusting shield harmonics to deflect micro-impacts. Every shadow cast by the tumbling asteroids seemed to hide a potential threat, keeping the tactical officers on a razor’s edge. Vance narrowed her eyes, studying the holographic readouts. The reports of smuggler activity in this quadrant had been escalating, and the patrol was determined to root out the source.<br><br>As the ship glided silently through a particularly narrow chasm of space rock, the proximity alarms chimed a soft warning. Long-range scanners swept the debris, isolating a faint, unauthorized energy signature masked by the surrounding radiation. They were no longer alone in the dark, and the hunt had officially begun."
+            },
+            {
+                title: "Dual Moon Action Scene",
+                image: "images/page3.png",
+                text: "Suddenly, the system’s dual moons loomed ominously on the horizon, their pale, ghostly light revealing the jagged silhouettes of hidden pirate frigates. Automated defense turrets on the Gemos locked onto the emerging target vectors, their targeting lasers cutting through the vacuum like crimson threads. 'Evasive maneuvers!' Captain Vance barked, her voice slicing through the sudden chaos of the bridge. The helmsman reacted instantly, banking the colossal ship hard to starboard just as a barrage of hostile plasma bursts illuminated the surrounding space rock.<br><br>The silent void erupted into a brilliant, deadly light show. Emerald energy lanced outward from the Gemos’s primary batteries, answering the pirate ambush with devastating accuracy. The dual moons provided a haunting backdrop to the skirmish, their cratered faces silently witnessing the clash of titans. Sparks cascaded from a grazing hit on the aft shields, but the vessel held firm, a testament to its formidable engineering.<br><br>Vance gripped the command console, her tactical mind racing ahead of the exchange. The enemy had the advantage of surprise, but they lacked the discipline of the patrol. With a series of rapid, calculated commands, she orchestrated a counter-offensive designed to cripple the hostile frigates and turn the ambush into a decisive, resounding victory."
+            }
+        ];
+
+        let currentIndex = 0;
+        let synth = window.speechSynthesis;
+        let utterance = null;
+        let isPlaying = false;
+        let isPaused = false;
+        let voices = [];
+
+        // Pre-load voices for the browser
+        function loadVoices() {
+            voices = synth.getVoices();
+        }
+        if (speechSynthesis.onvoiceschanged !== undefined) {
+            speechSynthesis.onvoiceschanged = loadVoices;
+        }
+
+        // Attempt to find a natural-sounding female voice installed on the OS
+        function getFemaleVoice() {
+            return voices.find(voice => 
+                voice.name.includes('Zira') || 
+                voice.name.includes('Samantha') || 
+                voice.name.includes('Female')
+            ) || voices[0]; 
+        }
+
+        function renderPage() {
+            if (synth) synth.cancel();
+            isPlaying = false;
+            isPaused = false;
+            updateAudioButton();
+
+            const current = pages[currentIndex];
+            document.getElementById('page-image').src = current.image;
+            document.getElementById('book-content').innerHTML = `<h3 style="color:#22d3ee; margin-top:0;">${current.title}</h3><p>${current.text}</p>`;
+            document.getElementById('counter').innerText = `PAGE ${currentIndex + 1} / ${pages.length}`;
+            
+            // Populate editor fields
+            document.getElementById('edit-title').value = current.title;
+            document.getElementById('edit-img').value = current.image;
+            document.getElementById('edit-text').value = current.text.replace(/<br><br>/g, '\n\n');
+            
+            // Auto-scroll back to top of text box when changing pages
+            document.getElementById('book-content').scrollTop = 0;
+            
+            // Auto-save progress silently in the background
+            localStorage.setItem('stellarOdysseyBookmark', currentIndex);
+        }
+
+        function nextPage() {
+            currentIndex = (currentIndex + 1) % pages.length;
+            renderPage();
+        }
+
+        function prevPage() {
+            currentIndex = (currentIndex - 1 + pages.length) % pages.length;
+            renderPage();
+        }
+
+        // Bookmark System
+        function saveBookmark() {
+            localStorage.setItem('stellarOdysseyBookmark', currentIndex);
+            alert("Bookmark saved! You will return to this exact page next time you open the reader.");
+        }
+
+        function loadBookmark() {
+            const savedPage = localStorage.getItem('stellarOdysseyBookmark');
+            if (savedPage !== null && savedPage < pages.length) {
+                currentIndex = parseInt(savedPage, 10);
+            }
+        }
+
+        function toggleEditor() {
+            const form = document.getElementById('editor-form');
+            form.style.display = form.style.display === 'block' ? 'none' : 'block';
+        }
+
+        function savePageChanges() {
+            pages[currentIndex].title = document.getElementById('edit-title').value;
+            pages[currentIndex].image = document.getElementById('edit-img').value;
+            pages[currentIndex].text = document.getElementById('edit-text').value.replace(/\n\n/g, '<br><br>');
+            renderPage();
+            alert("Page changes applied temporarily! (Remember to hardcode them in index.html to make them permanent)");
+        }
+
+        function toggleAudio() {
+            if (!synth) {
+                alert("Text-to-speech is not supported by your browser environment.");
+                return;
+            }
+
+            const btn = document.getElementById('audio-control-btn');
+            const rawText = pages[currentIndex].text.replace(/<[^>]*>?/gm, '');
+            const speakText = pages[currentIndex].title + ". " + rawText;
+
+            if (!isPlaying && !isPaused) {
+                utterance = new SpeechSynthesisUtterance(speakText);
+                utterance.voice = getFemaleVoice();
+                utterance.rate = 0.95; 
+                utterance.pitch = 1.1; 
+                
+                utterance.onend = function() {
+                    isPlaying = false;
+                    isPaused = false;
+                    updateAudioButton();
+                };
+                
+                synth.speak(utterance);
+                isPlaying = true;
+                isPaused = false;
+                btn.innerText = "⏸ Pause Audio";
+            } else if (isPlaying && !isPaused) {
+                synth.pause();
+                isPaused = true;
+                isPlaying = false;
+                btn.innerText = "▶ Resume Audio";
+            } else if (!isPlaying && isPaused) {
+                synth.resume();
+                isPaused = false;
+                isPlaying = true;
+                btn.innerText = "⏸ Pause Audio";
+            }
+        }
+
+        function updateAudioButton() {
+            const btn = document.getElementById('audio-control-btn');
+            if (isPlaying) {
+                btn.innerText = "⏸ Pause Audio";
+            } else if (isPaused) {
+                btn.innerText = "▶ Resume Audio";
+            } else {
+                btn.innerText = "🔊 Play Audio";
+            }
+        }
+
+        // Initialize App
+        setTimeout(loadVoices, 100); 
+        loadBookmark(); // Check for saved progress before rendering
+        renderPage();
+    </script>
+</body>
+</html>

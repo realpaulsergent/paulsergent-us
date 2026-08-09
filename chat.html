@@ -1,0 +1,729 @@
+<!doctype html>
+<html lang="en" class="dark">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>GemOS | LM Studio Neural Interface</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <script>
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            colors: {
+              slate: {
+                950: "#030712",
+                900: "#0f172a",
+                800: "#1e293b",
+                700: "#334155",
+              },
+              rose: { 600: "#e11d48", 500: "#f43f5e", 400: "#fb7185" },
+            },
+          },
+        },
+      };
+    </script>
+    <style>
+      @import url("https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap");
+      body {
+        font-family: "Plus Jakarta Sans", sans-serif;
+      }
+      .font-mono {
+        font-family: "JetBrains Mono", monospace;
+      }
+
+      ::-webkit-scrollbar {
+        width: 6px;
+      }
+      ::-webkit-scrollbar-track {
+        background: transparent;
+      }
+      ::-webkit-scrollbar-thumb {
+        background: #1e293b;
+        border-radius: 3px;
+      }
+      ::-webkit-scrollbar-thumb:hover {
+        background: #f43f5e;
+      }
+
+      .prose pre {
+        background-color: #0f172a;
+        padding: 1rem;
+        border-radius: 0.5rem;
+        overflow-x: auto;
+        border: 1px solid #1e293b;
+        margin: 0.5rem 0;
+      }
+      .prose code {
+        font-family: "JetBrains Mono", monospace;
+        color: #fb7185;
+        font-size: 0.85em;
+      }
+      .prose p {
+        margin-bottom: 0.75rem;
+      }
+      .prose ul {
+        list-style-type: disc;
+        padding-left: 1.5rem;
+        margin-bottom: 0.75rem;
+      }
+      .prose ol {
+        list-style-type: decimal;
+        padding-left: 1.5rem;
+        margin-bottom: 0.75rem;
+      }
+      .prose h1,
+      .prose h2,
+      .prose h3 {
+        color: #f8fafc;
+        font-weight: 600;
+        margin: 1rem 0 0.5rem 0;
+      }
+      .prose strong {
+        color: #f8fafc;
+        font-weight: 600;
+      }
+      .prose table {
+        width: 100%;
+        border-collapse: collapse;
+        margin: 1rem 0;
+      }
+      .prose th,
+      .prose td {
+        border: 1px solid #334155;
+        padding: 0.5rem 0.75rem;
+        text-align: left;
+        font-size: 0.85rem;
+      }
+      .prose th {
+        background-color: #1e293b;
+        color: #f8fafc;
+      }
+    </style>
+  </head>
+  <body
+    class="bg-slate-950 text-slate-200 h-screen flex overflow-hidden selection:bg-rose-500 selection:text-white"
+  >
+    <input
+      type="file"
+      id="file-input"
+      multiple
+      class="hidden"
+      onchange="handleFileSelect(event)"
+    />
+
+    <!-- Sidebar Navigation -->
+    <aside
+      class="w-64 bg-slate-900 border-r border-slate-800 flex flex-col hidden md:flex flex-shrink-0 z-20"
+    >
+      <div class="p-4 border-b border-slate-800 flex flex-col gap-3">
+        <button
+          onclick="clearChat()"
+          class="w-full flex items-center justify-center space-x-2 bg-slate-800 hover:bg-slate-700 text-white px-4 py-2 rounded-lg transition-colors border border-slate-700 hover:border-rose-500 cursor-pointer"
+        >
+          <span class="font-bold text-lg">+</span>
+          <span class="text-sm font-semibold">New Session</span>
+        </button>
+        <button
+          onclick="exportChat()"
+          class="w-full flex items-center justify-center space-x-2 bg-slate-950 hover:bg-slate-800 text-slate-400 hover:text-white px-4 py-2 rounded-lg transition-colors border border-slate-800 cursor-pointer"
+        >
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke-width="1.5"
+            stroke="currentColor"
+            class="w-4 h-4"
+          >
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              d="M3 16.5v2.25A2.25 2.25 0 0 0 5.25 21h13.5A2.25 2.25 0 0 0 21 18.75V16.5M16.5 12 12 16.5m0 0L7.5 12m4.5 4.5V3"
+            />
+          </svg>
+          <span class="text-xs font-mono">Export Chat (.txt)</span>
+        </button>
+      </div>
+      <div class="flex-1 overflow-y-auto p-3 space-y-1">
+        <div
+          class="text-[10px] font-mono text-slate-500 px-2 py-2 uppercase tracking-wider"
+        >
+          Navigation
+        </div>
+        <a
+          href="index.html"
+          class="block text-left px-3 py-2 text-sm text-slate-400 hover:bg-slate-800 hover:text-rose-400 rounded-md transition font-mono"
+        >
+          &larr; Return to Hub
+        </a>
+        <a
+          href="flipbook/index.html"
+          class="block text-left px-3 py-2 text-sm text-slate-400 hover:bg-slate-800 hover:text-rose-400 rounded-md transition font-mono"
+        >
+          &rarr; Open Flipbook
+        </a>
+      </div>
+      <div class="p-4 border-t border-slate-800 flex items-center space-x-3">
+        <div
+          class="w-8 h-8 rounded-full bg-rose-500 flex items-center justify-center text-white font-bold font-mono text-xs shadow-[0_0_10px_rgba(244,63,94,0.3)]"
+        >
+          PS
+        </div>
+        <div class="text-sm font-semibold">Paul Sergent</div>
+      </div>
+    </aside>
+
+    <!-- Main Workspace Area -->
+    <main
+      class="flex-1 flex flex-col relative bg-slate-950 h-full overflow-hidden"
+    >
+      <header
+        class="h-14 border-b border-slate-800 flex items-center justify-between px-4 bg-slate-950/90 backdrop-blur z-10 flex-shrink-0"
+      >
+        <div class="flex items-center space-x-2">
+          <span
+            id="status-indicator"
+            class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"
+          ></span>
+          <span class="font-mono text-xs text-slate-400" id="status-text"
+            >Connecting to LM Studio...</span
+          >
+        </div>
+        <div class="flex items-center space-x-2">
+          <span class="text-xs font-mono text-slate-400">Active Model:</span>
+          <span
+            id="active-model-name"
+            class="bg-slate-900 border border-slate-700 text-rose-400 text-xs font-mono px-3 py-1.5 rounded-lg"
+            >Detecting...</span
+          >
+        </div>
+      </header>
+
+      <!-- Chat Window with generous bottom padding (pb-[45rem]) to clear the absolute input bar completely -->
+      <div
+        id="chat-window"
+        class="flex-1 overflow-y-auto p-4 sm:p-6 space-y-8 pb-[45rem]"
+      >
+        <!-- Initial Welcome Bubble -->
+        <div class="flex items-start space-x-4 max-w-4xl mx-auto w-full">
+          <div
+            class="w-8 h-8 rounded flex-shrink-0 bg-rose-500 flex items-center justify-center border border-rose-400 shadow-[0_0_15px_rgba(244,63,94,0.2)] mt-1"
+          >
+            <span class="text-white text-xs font-mono font-bold">AI</span>
+          </div>
+          <div class="flex-1 space-y-2 pt-1.5">
+            <div class="text-sm text-slate-300 leading-relaxed">
+              Fresh neural session initialized. Ready for your next prompt or
+              image.
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Input Area -->
+      <div
+        class="absolute bottom-0 left-0 w-full bg-gradient-to-t from-slate-950 via-slate-950/95 to-transparent pt-16 pb-6 px-4 z-20"
+      >
+        <div class="max-w-4xl mx-auto flex flex-col gap-2">
+          <div
+            id="attachment-bar"
+            class="hidden flex flex-wrap gap-2 bg-slate-900/90 border border-slate-800 p-2 rounded-xl"
+          ></div>
+
+          <div class="relative flex items-end space-x-2">
+            <button
+              onclick="document.getElementById('file-input').click()"
+              title="Attach image or text file"
+              class="p-3 bg-slate-900 border border-slate-700 hover:bg-slate-800 text-slate-300 hover:text-rose-400 rounded-xl transition-colors h-[56px] flex-shrink-0 cursor-pointer"
+            >
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke-width="1.5"
+                stroke="currentColor"
+                class="w-5 h-5"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  d="m18.375 12.739-7.693 7.693a4.5 4.5 0 0 1-6.364-6.364l10.94-10.94A3 3 0 1 1 19.5 7.372L8.552 18.32m.009-.01-.01.01m5.699-9.941-7.81 7.81a1.5 1.5 0 0 0 2.112 2.13"
+                />
+              </svg>
+            </button>
+
+            <div class="relative flex-grow">
+              <textarea
+                id="prompt-input"
+                rows="1"
+                class="w-full bg-slate-900 border border-slate-700 text-slate-100 text-sm rounded-xl focus:ring-rose-500 focus:border-rose-500 block p-4 pr-14 outline-none resize-none shadow-xl max-h-40"
+                placeholder="Message LM Studio model... (Press Enter to send, Shift+Enter for new line)"
+              ></textarea>
+              <button
+                onclick="sendMessage()"
+                id="send-btn"
+                class="absolute right-2 bottom-2.5 p-2 bg-rose-600 hover:bg-rose-500 text-white rounded-lg transition-colors cursor-pointer"
+              >
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke-width="2"
+                  stroke="currentColor"
+                  class="w-4 h-4"
+                >
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    d="M4.5 12h15m0 0l-6.75-6.75M19.5 12l-6.75 6.75"
+                  />
+                </svg>
+              </button>
+            </div>
+          </div>
+        </div>
+        <div class="text-center mt-2">
+          <span class="text-[10px] font-mono text-slate-500"
+            >Local inference via LM Studio Server (127.0.0.1:1234)</span
+          >
+        </div>
+      </div>
+    </main>
+
+    <script>
+      const LM_STUDIO_HOST = "http://127.0.0.1:1234";
+      let pendingImages = [];
+      let pendingTextContext = "";
+      let synth = window.speechSynthesis;
+      let voices = [];
+
+      function loadVoices() {
+        voices = synth.getVoices();
+      }
+      if (speechSynthesis.onvoiceschanged !== undefined) {
+        speechSynthesis.onvoiceschanged = loadVoices;
+      }
+      setTimeout(loadVoices, 100);
+
+      function getFemaleVoice() {
+        return (
+          voices.find(
+            (v) =>
+              v.name.includes("Zira") ||
+              v.name.includes("Samantha") ||
+              v.name.includes("Female"),
+          ) || voices[0]
+        );
+      }
+
+      async function checkConnection() {
+        const statusText = document.getElementById("status-text");
+        const statusDot = document.getElementById("status-indicator");
+        const modelBadge = document.getElementById("active-model-name");
+
+        try {
+          const response = await fetch(`${LM_STUDIO_HOST}/v1/models`);
+          if (!response.ok) throw new Error("Offline");
+          const data = await response.json();
+
+          if (data.data && data.data.length > 0) {
+            const loadedModel = data.data[0].id;
+            modelBadge.textContent = loadedModel;
+            statusText.textContent = "LM Studio Connected";
+            statusDot.className =
+              "w-2 h-2 rounded-full bg-emerald-500 animate-pulse";
+          } else {
+            modelBadge.textContent = "No Model Loaded";
+            statusText.textContent = "Server Online";
+            statusDot.className = "w-2 h-2 rounded-full bg-amber-500";
+          }
+        } catch (err) {
+          modelBadge.textContent = "Server Offline";
+          statusText.textContent = "LM Studio Unreachable";
+          statusDot.className = "w-2 h-2 rounded-full bg-rose-500";
+        }
+      }
+
+      function handleFileSelect(event) {
+        const files = event.target.files;
+        if (!files || files.length === 0) return;
+
+        const bar = document.getElementById("attachment-bar");
+        bar.classList.remove("hidden");
+
+        Array.from(files).forEach((file) => {
+          if (file.type.startsWith("image/")) {
+            const reader = new FileReader();
+            reader.onload = function (e) {
+              const base64Full = e.target.result;
+              pendingImages.push(base64Full);
+
+              const badge = document.createElement("div");
+              badge.className =
+                "relative group w-12 h-12 rounded-lg border border-slate-700 overflow-hidden";
+              badge.innerHTML = `<img src="${base64Full}" class="w-full h-full object-cover"><button onclick="removeImage(${pendingImages.length - 1}, this)" class="absolute inset-0 bg-slate-950/80 text-rose-400 text-xs flex items-center justify-center opacity-0 group-hover:opacity-100 font-bold cursor-pointer">&times;</button>`;
+              bar.appendChild(badge);
+            };
+            reader.readAsDataURL(file);
+          } else {
+            const reader = new FileReader();
+            reader.onload = function (e) {
+              pendingTextContext += `\n\n--- Attached File: ${file.name} ---\n${e.target.result}\n--- End File ---`;
+
+              const badge = document.createElement("div");
+              badge.className =
+                "flex items-center space-x-1 bg-slate-800 text-slate-300 border border-slate-700 text-xs px-2.5 py-1 rounded-md font-mono";
+              badge.innerHTML = `<span>📄 ${file.name}</span><button onclick="this.parentElement.remove()" class="text-rose-400 font-bold ml-1 cursor-pointer">&times;</button>`;
+              bar.appendChild(badge);
+            };
+            reader.readAsText(file);
+          }
+        });
+        event.target.value = "";
+      }
+
+      function removeImage(index, element) {
+        pendingImages.splice(index, 1);
+        element.parentElement.remove();
+        if (pendingImages.length === 0 && !pendingTextContext) {
+          document.getElementById("attachment-bar").classList.add("hidden");
+        }
+      }
+
+      const promptInput = document.getElementById("prompt-input");
+      promptInput.addEventListener("input", function () {
+        this.style.height = "auto";
+        this.style.height = this.scrollHeight + "px";
+        if (this.value === "") this.style.height = "56px";
+      });
+
+      promptInput.addEventListener("keydown", function (e) {
+        if (e.key === "Enter" && !e.shiftKey) {
+          e.preventDefault();
+          sendMessage();
+        }
+      });
+
+      function escapeHtml(str) {
+        return str
+          .replace(/&/g, "&amp;")
+          .replace(/</g, "&lt;")
+          .replace(/>/g, "&gt;");
+      }
+
+      function formatMarkdown(text) {
+        try {
+          if (typeof marked !== "undefined") return marked.parse(text);
+        } catch (e) {}
+        return escapeHtml(text).replace(/\n/g, "<br>");
+      }
+
+      function getTimeString() {
+        const now = new Date();
+        return now.toLocaleTimeString([], {
+          hour: "2-digit",
+          minute: "2-digit",
+          second: "2-digit",
+        });
+      }
+
+      function appendUserBubble(text, hasImages = false) {
+        const chatWin = document.getElementById("chat-window");
+        const imgBadge = hasImages
+          ? '<div class="text-xs font-mono text-rose-400 mb-1">[📷 Image Attached]</div>'
+          : "";
+        const timestamp = getTimeString();
+        const html = `
+                <div class="flex items-start space-x-4 max-w-4xl mx-auto w-full">
+                    <div class="w-8 h-8 rounded flex-shrink-0 bg-slate-800 flex items-center justify-center border border-slate-700 mt-1">
+                        <span class="text-slate-300 text-xs font-mono font-bold">PS</span>
+                    </div>
+                    <div class="flex-1 bg-slate-900 border border-slate-800 rounded-xl p-4 shadow-sm relative">
+                        <div class="absolute top-3 right-4 text-[10px] font-mono text-slate-500">${timestamp}</div>
+                        ${imgBadge}
+                        <div class="text-sm text-slate-100 whitespace-pre-wrap leading-relaxed pr-16">${escapeHtml(text)}</div>
+                    </div>
+                </div>`;
+        chatWin.insertAdjacentHTML("beforeend", html);
+        chatWin.scrollTop = chatWin.scrollHeight;
+      }
+
+      function appendAIBubble(
+        text,
+        msgIndex,
+        durationSec = null,
+        tokenCount = null,
+      ) {
+        const chatWin = document.getElementById("chat-window");
+        const timestamp = getTimeString();
+        const tokenBadge = tokenCount ? `${tokenCount} tok` : "";
+        const timeBadge = durationSec ? `${durationSec}s` : "";
+        const statsText =
+          timeBadge || tokenBadge
+            ? `<span class="bg-slate-900 border border-slate-800 px-2 py-1 rounded text-slate-400">⏱️ ${timeBadge}${tokenBadge ? " (" + tokenBadge + ")" : ""}</span>`
+            : "";
+
+        const html = `
+                <div id="ai-msg-${msgIndex}" class="flex items-start space-x-4 max-w-4xl mx-auto w-full group">
+                    <div class="w-8 h-8 rounded flex-shrink-0 bg-rose-500 flex items-center justify-center border border-rose-400 shadow-[0_0_15px_rgba(244,63,94,0.2)] mt-1">
+                        <span class="text-white text-xs font-mono font-bold">AI</span>
+                    </div>
+                    <div class="flex-1 min-w-0 relative">
+                        <div class="absolute top-0 right-0 text-[10px] font-mono text-slate-500">${timestamp}</div>
+                        <div class="prose prose-invert text-sm text-slate-300 leading-relaxed max-w-none pt-4 content-area">${formatMarkdown(text)}</div>
+                        
+                        <div class="flex items-center justify-between pt-3">
+                            <div class="flex space-x-3 opacity-0 group-hover:opacity-100 transition-opacity">
+                                <button onclick="copyToClipboard(${msgIndex})" class="text-xs font-mono text-slate-400 hover:text-rose-400 flex items-center space-x-1 bg-slate-900 px-2.5 py-1.5 rounded-lg border border-slate-800 cursor-pointer transition">
+                                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-3.5 h-3.5"><path stroke-linecap="round" stroke-linejoin="round" d="M15.75 17.25v3.375c0 .621-.504 1.125-1.125 1.125h-9.75a1.125 1.125 0 0 1-1.125-1.125V7.875c0-.621.504-1.125 1.125-1.125H6.75a9.06 9.06 0 0 1 1.5.124m7.5 10.376h3.375c.621 0 1.125-.504 1.125-1.125V11.25c0-4.46-3.243-8.161-7.5-8.876a9.06 9.06 0 0 0-1.5-.124H9.375c-.621 0-1.125.504-1.125 1.125v3.5m7.5 10.375H9.375a1.125 1.125 0 0 1-1.125-1.125v-9.25m12 6.625v-1.875a3.375 3.375 0 0 0-3.375-3.375h-1.5a1.125 1.125 0 0 1-1.125-1.125v-1.5a3.375 3.375 0 0 0-3.375-3.375H9.75" /></svg>
+                                    <span>Copy</span>
+                                </button>
+                                <button onclick="playTTS(${msgIndex})" class="text-xs font-mono text-slate-400 hover:text-rose-400 flex items-center space-x-1 bg-slate-900 px-2.5 py-1.5 rounded-lg border border-slate-800 cursor-pointer transition">
+                                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-3.5 h-3.5"><path stroke-linecap="round" stroke-linejoin="round" d="M19.114 5.636a9 9 0 0 1 0 12.728M16.463 8.288a5.25 5.25 0 0 1 0 7.424M6.75 8.25l4.72-4.72a.75.75 0 0 1 1.28.53v15.88a.75.75 0 0 1-1.28.53l-4.72-4.72H4.51c-.88 0-1.704-.507-1.938-1.354A9.009 9.009 0 0 1 2.25 12c0-.83.112-1.633.322-2.396C2.806 8.756 3.63 8.25 4.51 8.25H6.75Z" /></svg>
+                                    <span>Audio</span>
+                                </button>
+                            </div>
+                            <div class="text-xs font-mono text-slate-500 duration-badge">
+                                ${statsText}
+                            </div>
+                        </div>
+                    </div>
+                </div>`;
+        chatWin.insertAdjacentHTML("beforeend", html);
+        chatWin.scrollTop = chatWin.scrollHeight;
+      }
+
+      async function sendMessage() {
+        const inputField = document.getElementById("prompt-input");
+        const text = inputField.value.trim();
+
+        if (!text && pendingImages.length === 0 && !pendingTextContext) return;
+
+        let fullUserPrompt = text;
+        if (pendingTextContext) {
+          fullUserPrompt += pendingTextContext;
+        }
+
+        const hasImages = pendingImages.length > 0;
+        appendUserBubble(fullUserPrompt, hasImages);
+
+        let contentPayload = fullUserPrompt;
+        if (hasImages) {
+          contentPayload = [{ type: "text", text: fullUserPrompt }];
+          pendingImages.forEach((imgBase64) => {
+            contentPayload.push({
+              type: "image_url",
+              image_url: { url: imgBase64 },
+            });
+          });
+        }
+
+        const currentPayload = [{ role: "user", content: contentPayload }];
+
+        inputField.value = "";
+        inputField.style.height = "56px";
+        pendingImages = [];
+        pendingTextContext = "";
+        document.getElementById("attachment-bar").innerHTML = "";
+        document.getElementById("attachment-bar").classList.add("hidden");
+
+        const chatWin = document.getElementById("chat-window");
+        const tempId = "loading-" + Date.now();
+
+        chatWin.insertAdjacentHTML(
+          "beforeend",
+          `
+                <div id="${tempId}" class="flex items-start space-x-4 max-w-4xl mx-auto w-full">
+                    <div class="w-8 h-8 rounded flex-shrink-0 bg-rose-500 flex items-center justify-center border border-rose-400 mt-1">
+                        <span class="text-white text-xs font-mono font-bold">AI</span>
+                    </div>
+                    <div class="flex-1 pt-2">
+                        <span id="${tempId}-status" class="text-sm text-rose-400 font-mono animate-pulse">Generating... 0 tok</span>
+                    </div>
+                </div>
+            `,
+        );
+        chatWin.scrollTop = chatWin.scrollHeight;
+
+        const startTime = performance.now();
+        let accumulatedText = "";
+        let tokenCount = 0;
+
+        try {
+          const response = await fetch(
+            `${LM_STUDIO_HOST}/v1/chat/completions`,
+            {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({
+                model: "local-model",
+                messages: currentPayload,
+                temperature: 0.7,
+                stream: true,
+              }),
+            },
+          );
+
+          if (!response.ok) throw new Error(`HTTP Error ${response.status}`);
+
+          const reader = response.body.getReader();
+          const decoder = new TextDecoder("utf-8");
+
+          const tempElement = document.getElementById(tempId);
+          const msgIndex = Date.now();
+
+          appendAIBubble("", msgIndex);
+          if (tempElement) tempElement.remove();
+
+          const activeAiBubbleContent =
+            chatWin.lastElementChild.querySelector(".content-area");
+          const activeAiBubbleContainer = chatWin.lastElementChild;
+
+          while (true) {
+            const { done, value } = await reader.read();
+            if (done) break;
+
+            const chunk = decoder.decode(value, { stream: true });
+            const lines = chunk.split("\n");
+
+            for (const line of lines) {
+              if (line.startsWith("data: ")) {
+                const jsonStr = line.replace("data: ", "").trim();
+                if (jsonStr === "[DONE]") break;
+                try {
+                  const parsed = JSON.parse(jsonStr);
+                  const contentDelta = parsed.choices[0]?.delta?.content || "";
+                  if (contentDelta) {
+                    accumulatedText += contentDelta;
+                    tokenCount++;
+                    activeAiBubbleContent.innerHTML =
+                      formatMarkdown(accumulatedText);
+                    chatWin.scrollTop = chatWin.scrollHeight;
+
+                    const statusSpan = document.getElementById(
+                      `${tempId}-status`,
+                    );
+                    if (statusSpan)
+                      statusSpan.textContent = `Generating... ${tokenCount} tok`;
+                  }
+                } catch (e) {}
+              }
+            }
+          }
+
+          const endTime = performance.now();
+          const durationSec = ((endTime - startTime) / 1000).toFixed(1);
+
+          const badgeContainer =
+            activeAiBubbleContainer.querySelector(".duration-badge");
+          if (badgeContainer) {
+            badgeContainer.innerHTML = `<span class="bg-slate-900 border border-slate-800 px-2 py-1 rounded text-slate-400">⏱️ ${durationSec}s (${tokenCount} tok)</span>`;
+          }
+
+          archiveToHistory(
+            fullUserPrompt,
+            accumulatedText,
+            durationSec,
+            tokenCount,
+          );
+        } catch (err) {
+          const tempElement = document.getElementById(tempId);
+          if (tempElement) {
+            tempElement.innerHTML = `
+                        <div class="text-rose-500 font-mono text-sm bg-rose-500/10 border border-rose-500/30 p-3 rounded">
+                            CONNECTION ERROR: Could not reach LM Studio server. Verify server is running.
+                        </div>`;
+          }
+        }
+      }
+
+      function archiveToHistory(userPrompt, aiResponse, duration, tokens) {
+        let history = JSON.parse(
+          localStorage.getItem("gemos_chat_archive") || "[]",
+        );
+        history.history || (history = []);
+        history.push({
+          time: getTimeString(),
+          user: userPrompt,
+          ai: aiResponse,
+          stats: `${duration}s (${tokens} tok)`,
+        });
+        localStorage.setItem("gemos_chat_archive", JSON.stringify(history));
+      }
+
+      function copyToClipboard(msgIndex) {
+        const bubble = document.getElementById(`ai-msg-${msgIndex}`);
+        if (bubble) {
+          const text = bubble.querySelector(".content-area").innerText;
+          navigator.clipboard
+            .writeText(text)
+            .then(() => alert("Response copied to clipboard!"));
+        }
+      }
+
+      function playTTS(msgIndex) {
+        if (synth.speaking) {
+          synth.cancel();
+          return;
+        }
+        const bubble = document.getElementById(`ai-msg-${msgIndex}`);
+        if (bubble) {
+          const rawText = bubble
+            .querySelector(".content-area")
+            .innerText.replace(/[*#_`]/g, "");
+          const utterance = new SpeechSynthesisUtterance(rawText);
+          utterance.voice = getFemaleVoice();
+          utterance.rate = 1.0;
+          synth.speak(utterance);
+        }
+      }
+
+      function exportChat() {
+        let history = JSON.parse(
+          localStorage.getItem("gemos_chat_archive") || "[]",
+        );
+        if (history.length === 0) {
+          alert("Chat archive is empty.");
+          return;
+        }
+        let text =
+          "GemOS Workspace | Archived Chat Sessions\n===========================================\n\n";
+        history.forEach((h, idx) => {
+          text += `[Session ${idx + 1} - ${h.time}]\nUSER:\n${h.user}\n\nAI (${h.stats}):\n${h.ai}\n\n-------------------------------------------\n\n`;
+        });
+        const blob = new Blob([text], { type: "text/plain" });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = `GemOS_Archive_${new Date().toISOString().slice(0, 10)}.txt`;
+        a.click();
+        URL.revokeObjectURL(url);
+      }
+
+      function clearChat() {
+        if (
+          confirm(
+            "Start a new clean chat session? (Previous items are safely archived)",
+          )
+        ) {
+          document.getElementById("chat-window").innerHTML = `
+                    <div class="flex items-start space-x-4 max-w-4xl mx-auto w-full">
+                        <div class="w-8 h-8 rounded flex-shrink-0 bg-rose-500 flex items-center justify-center border border-rose-400 shadow-[0_0_15px_rgba(244,63,94,0.2)] mt-1">
+                            <span class="text-white text-xs font-mono font-bold">AI</span>
+                        </div>
+                        <div class="flex-1 space-y-2 pt-1.5">
+                            <div class="text-sm text-slate-300 leading-relaxed">
+                                Fresh neural session initialized. Ready for your next prompt or image.
+                            </div>
+                        </div>
+                    </div>`;
+          if (synth) synth.cancel();
+        }
+      }
+
+      checkConnection();
+    </script>
+  </body>
+</html>
