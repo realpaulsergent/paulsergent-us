@@ -1,246 +1,387 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en" class="dark">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Paul Sergent | The Digital Hub</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
-        tailwind.config = {
-            darkMode: 'class',
-            theme: {
-                extend: {
-                    colors: {
-                        slate: {
-                            950: '#030712',
-                        }
-                    }
-                }
-            }
-        }
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            colors: {
+              slate: {
+                950: "#030712",
+              },
+            },
+          },
+        },
+      };
     </script>
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap');
-        body {
-            font-family: 'Plus Jakarta Sans', sans-serif;
-        }
-        .font-mono {
-            font-family: 'JetBrains Mono', monospace;
-        }
-        
-        /* Custom scrollbar for diagnostic terminal */
-        #diagnostic-output::-webkit-scrollbar { width: 6px; }
-        #diagnostic-output::-webkit-scrollbar-track { background: rgba(3, 7, 18, 0.5); border-radius: 3px; }
-        #diagnostic-output::-webkit-scrollbar-thumb { background: #f43f5e; border-radius: 3px; } /* rose-500 */
-        
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(5px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-    </style>
-</head>
-<body class="bg-slate-950 text-slate-100 min-h-screen flex flex-col justify-between selection:bg-rose-500 selection:text-white relative">
+      @import url("https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap");
+      body {
+        font-family: "Plus Jakarta Sans", sans-serif;
+      }
+      .font-mono {
+        font-family: "JetBrains Mono", monospace;
+      }
 
+      /* Custom scrollbar for diagnostic terminal */
+      #diagnostic-output::-webkit-scrollbar {
+        width: 6px;
+      }
+      #diagnostic-output::-webkit-scrollbar-track {
+        background: rgba(3, 7, 18, 0.5);
+        border-radius: 3px;
+      }
+      #diagnostic-output::-webkit-scrollbar-thumb {
+        background: #f43f5e;
+        border-radius: 3px;
+      } /* rose-500 */
+
+      @keyframes fadeIn {
+        from {
+          opacity: 0;
+          transform: translateY(5px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+    </style>
+  </head>
+  <body
+    class="bg-slate-950 text-slate-100 min-h-screen flex flex-col justify-between selection:bg-rose-500 selection:text-white relative"
+  >
     <!-- Diagnostic Terminal Overlay (Hidden by default) -->
-    <div id="diagnostic-modal" class="fixed inset-0 bg-slate-950/95 backdrop-blur-md hidden flex-col items-center justify-center z-[100] p-4">
-        <div class="bg-black border border-rose-500/30 rounded-xl p-6 w-full max-w-2xl shadow-[0_0_30px_rgba(244,63,94,0.15)]">
-            <div class="flex justify-between items-center border-b border-slate-800 pb-3 mb-4">
-                <span class="text-rose-400 font-mono font-bold tracking-wider text-sm">[ SYSTEM DIAGNOSTICS ACTIVE ]</span>
-                <button onclick="closeDiagnostics()" class="text-slate-500 hover:text-white font-mono text-xs transition">[ TERMINATE ]</button>
-            </div>
-            <div id="diagnostic-output" class="font-mono text-xs sm:text-sm space-y-2 h-48 overflow-y-auto text-emerald-400">
-                <!-- Text gets injected here dynamically -->
-            </div>
+    <div
+      id="diagnostic-modal"
+      class="fixed inset-0 bg-slate-950/95 backdrop-blur-md hidden flex-col items-center justify-center z-[100] p-4"
+    >
+      <div
+        class="bg-black border border-rose-500/30 rounded-xl p-6 w-full max-w-2xl shadow-[0_0_30px_rgba(244,63,94,0.15)]"
+      >
+        <div
+          class="flex justify-between items-center border-b border-slate-800 pb-3 mb-4"
+        >
+          <span class="text-rose-400 font-mono font-bold tracking-wider text-sm"
+            >[ SYSTEM DIAGNOSTICS ACTIVE ]</span
+          >
+          <button
+            onclick="closeDiagnostics()"
+            class="text-slate-500 hover:text-white font-mono text-xs transition"
+          >
+            [ TERMINATE ]
+          </button>
         </div>
+        <div
+          id="diagnostic-output"
+          class="font-mono text-xs sm:text-sm space-y-2 h-48 overflow-y-auto text-emerald-400"
+        >
+          <!-- Text gets injected here dynamically -->
+        </div>
+      </div>
     </div>
 
     <!-- Top Bar / Anti-Censorship Notice -->
-    <header class="w-full border-b border-slate-800/60 bg-slate-950/80 backdrop-blur-md sticky top-0 z-50 px-6 py-3 flex items-center justify-between">
-        <div class="flex items-center space-x-3">
-            <span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-rose-500/10 text-rose-400 border border-rose-500/20">
-                <span class="w-1.5 h-1.5 mr-1.5 bg-rose-500 rounded-full animate-pulse"></span>
-                Anti-Censorship Fallback
-            </span>
-        </div>
-        <div class="text-xs font-mono text-slate-400 hidden sm:block">
-            Sovereign Node // Direct-to-Reader Architecture
-        </div>
+    <header
+      class="w-full border-b border-slate-800/60 bg-slate-950/80 backdrop-blur-md sticky top-0 z-50 px-6 py-3 flex items-center justify-between"
+    >
+      <div class="flex items-center space-x-3">
+        <span
+          class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-rose-500/10 text-rose-400 border border-rose-500/20"
+        >
+          <span
+            class="w-1.5 h-1.5 mr-1.5 bg-rose-500 rounded-full animate-pulse"
+          ></span>
+          Anti-Censorship Fallback
+        </span>
+      </div>
+      <div class="text-xs font-mono text-slate-400 hidden sm:block">
+        Sovereign Node // Direct-to-Reader Architecture
+      </div>
     </header>
 
     <!-- Main Hero Section -->
-    <main class="max-w-7xl mx-auto px-6 py-12 lg:py-20 grid grid-cols-1 lg:grid-cols-12 gap-12 items-center flex-grow">
-        
-        <!-- Left Column: Manifesto & Controls -->
-        <div class="lg:col-span-7 space-y-8">
-            <div class="space-y-4">
-                <h1 class="text-3xl sm:text-5xl lg:text-6xl font-extrabold tracking-tight text-white leading-none">
-                    Failed Social Media Connections! <span class="text-rose-400">Stay</span> Online.
-                </h1>
-                <p class="text-base sm:text-lg text-slate-300 leading-relaxed font-normal max-w-2xl">
-                    Algorithms dictate what you see. Accounts face sudden bans, restrictions, or algorithmic shadowbans. Having worn the uniform for <span class="text-rose-400 font-semibold">20 years to protect fundamental freedoms</span>, I believe in absolute sovereignty. This digital hub serves as our direct line—no corporate tracking, no content filtering.
-                </p>
-            </div>
-
-            <!-- Sovereign List / Direct Email Capture Box -->
-            <div class="bg-slate-900/60 border border-slate-800 p-6 rounded-2xl max-w-xl backdrop-blur-sm shadow-xl">
-                <h3 class="text-sm font-bold uppercase tracking-wider text-white font-mono mb-2">Join the Sovereign List</h3>
-                <p class="text-xs text-slate-400 mb-4">Get direct dispatches, book drops, and raw essays straight to your inbox without algorithmic middlemen.</p>
-                
-                <!-- Web3Forms Enabled Form -->
-                <form action="https://api.web3forms.com/submit" method="POST" class="flex flex-col sm:flex-row gap-3">
-                    <input type="hidden" name="access_key" value="45027178-9e1b-461f-b42f-5dfa3bc5dbd">
-                    <input type="email" name="email" placeholder="Enter secure email address..." class="bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-sm text-white placeholder-slate-500 focus:outline-none focus:border-rose-500 flex-grow transition-colors" required>
-                    <button type="submit" class="bg-rose-600 hover:bg-rose-500 text-white text-sm font-bold px-6 py-3 rounded-xl transition-all shadow-lg shadow-rose-600/20 cursor-pointer">
-                        Secure Entry
-                    </button>
-                </form>
-            </div>
-
-            <!-- System Node Controls -->
-            <div class="flex flex-wrap gap-3 items-center pt-2">
-                <a href="flipbook/index.html" class="px-5 py-2.5 rounded-xl bg-slate-800 border border-slate-700 text-white font-bold hover:bg-slate-700 hover:border-rose-500 transition-all font-mono text-xs shadow-lg flex items-center">
-                    <span class="w-2 h-2 rounded-full bg-rose-500 mr-2 animate-pulse"></span>
-                    Launch Flipbook Module &rarr;
-                </a>
-                <button onclick="runDiagnostics()" class="px-5 py-2.5 rounded-xl bg-slate-900/80 border border-slate-800 text-slate-400 hover:text-white hover:border-slate-600 transition-all font-mono text-xs">
-                    System Diagnostics
-                </button>
-                <button onclick="testAudioFeed()" id="audio-btn" class="px-5 py-2.5 rounded-xl bg-slate-900/80 border border-slate-800 text-slate-400 hover:text-rose-400 hover:border-rose-500/50 transition-all font-mono text-xs">
-                    Test Audio Feed
-                </button>
-            </div>
+    <main
+      class="max-w-7xl mx-auto px-6 py-12 lg:py-20 grid grid-cols-1 lg:grid-cols-12 gap-12 items-center flex-grow"
+    >
+      <!-- Left Column: Manifesto & Controls -->
+      <div class="lg:col-span-7 space-y-8">
+        <div class="space-y-4">
+          <h1
+            class="text-3xl sm:text-5xl lg:text-6xl font-extrabold tracking-tight text-white leading-none"
+          >
+            Failed Social Media Connections!
+            <span class="text-rose-400">Stay</span> Online.
+          </h1>
+          <p
+            class="text-base sm:text-lg text-slate-300 leading-relaxed font-normal max-w-2xl"
+          >
+            Algorithms dictate what you see. Accounts face sudden bans,
+            restrictions, or algorithmic shadowbans. Having worn the uniform for
+            <span class="text-rose-400 font-semibold"
+              >20 years to protect fundamental freedoms</span
+            >, I believe in absolute sovereignty. This digital hub serves as our
+            direct line—no corporate tracking, no content filtering.
+          </p>
         </div>
 
-        <!-- Right Column: Featured Vault Card -->
-        <div class="lg:col-span-5 flex justify-center">
-            <div class="w-full max-w-md bg-slate-900/80 border border-slate-800 rounded-3xl overflow-hidden shadow-2xl relative group">
-                <!-- Image Container with object-contain -->
-                <div class="h-96 w-full relative overflow-hidden bg-slate-950 flex items-center justify-center">
-                    <img src="./assets/images/Silence Resonance A Voyage Across Time.png" class="object-contain w-full h-full p-2 group-hover:scale-105 transition-transform duration-500" alt="Silent Resonance Book Cover">
-                    <div class="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/20 to-transparent pointer-events-none"></div>
-                </div>
-                <!-- Content Overlay -->
-                <div class="p-6 relative">
-                    <span class="text-[10px] font-mono text-rose-400 uppercase tracking-widest bg-slate-950/80 px-2.5 py-1 rounded-md border border-slate-800">Next Launch</span>
-                    <h4 class="text-xl font-bold font-display text-white mt-2">Silent Resonance & Chrono Series</h4>
-                    <p class="text-xs text-slate-300 mt-1 leading-relaxed">Immersive tales detailing complex mechanics, time travel, and star systems crafted for direct reader engagement.</p>
-                </div>
-            </div>
+        <!-- Sovereign List / Direct Email Capture Box -->
+        <div
+          class="bg-slate-900/60 border border-slate-800 p-6 rounded-2xl max-w-xl backdrop-blur-sm shadow-xl"
+        >
+          <h3
+            class="text-sm font-bold uppercase tracking-wider text-white font-mono mb-2"
+          >
+            Join the Sovereign List
+          </h3>
+          <p class="text-xs text-slate-400 mb-4">
+            Get direct dispatches, book drops, and raw essays straight to your
+            inbox without algorithmic middlemen.
+          </p>
+
+          <!-- Web3Forms Enabled Form -->
+          <form
+            action="https://api.web3forms.com/submit"
+            method="POST"
+            class="flex flex-col sm:flex-row gap-3"
+          >
+            <input
+              type="hidden"
+              name="access_key"
+              value="45027178-9e1b-461f-b42f-5dfa3bc53dbd"
+            />
+            <input
+              type="email"
+              name="email"
+              placeholder="Enter secure email address..."
+              class="bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-sm text-white placeholder-slate-500 focus:outline-none focus:border-rose-500 flex-grow transition-colors"
+              required
+            />
+            <button
+              type="submit"
+              class="bg-rose-600 hover:bg-rose-500 text-white text-sm font-bold px-6 py-3 rounded-xl transition-all shadow-lg shadow-rose-600/20 cursor-pointer"
+            >
+              Secure Entry
+            </button>
+          </form>
         </div>
 
+        <!-- System Node Controls -->
+        <div class="flex flex-wrap gap-3 items-center pt-2">
+          <a
+            href="flipbook/index.html"
+            class="px-5 py-2.5 rounded-xl bg-slate-800 border border-slate-700 text-white font-bold hover:bg-slate-700 hover:border-rose-500 transition-all font-mono text-xs shadow-lg flex items-center"
+          >
+            <span
+              class="w-2 h-2 rounded-full bg-rose-500 mr-2 animate-pulse"
+            ></span>
+            Launch Flipbook Module &rarr;
+          </a>
+          <button
+            onclick="runDiagnostics()"
+            class="px-5 py-2.5 rounded-xl bg-slate-900/80 border border-slate-800 text-slate-400 hover:text-white hover:border-slate-600 transition-all font-mono text-xs"
+          >
+            System Diagnostics
+          </button>
+          <button
+            onclick="testAudioFeed()"
+            id="audio-btn"
+            class="px-5 py-2.5 rounded-xl bg-slate-900/80 border border-slate-800 text-slate-400 hover:text-rose-400 hover:border-rose-500/50 transition-all font-mono text-xs"
+          >
+            Test Audio Feed
+          </button>
+        </div>
+      </div>
+
+      <!-- Right Column: Featured Vault Card -->
+      <div class="lg:col-span-5 flex justify-center">
+        <div
+          class="w-full max-w-md bg-slate-900/80 border border-slate-800 rounded-3xl overflow-hidden shadow-2xl relative group"
+        >
+          <!-- Image Container with object-contain -->
+          <div
+            class="h-96 w-full relative overflow-hidden bg-slate-950 flex items-center justify-center"
+          >
+            <img
+              src="./assets/images/Silence Resonance A Voyage Across Time.png"
+              class="object-contain w-full h-full p-2 group-hover:scale-105 transition-transform duration-500"
+              alt="Silent Resonance Book Cover"
+            />
+            <div
+              class="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/20 to-transparent pointer-events-none"
+            ></div>
+          </div>
+          <!-- Content Overlay -->
+          <div class="p-6 relative">
+            <span
+              class="text-[10px] font-mono text-rose-400 uppercase tracking-widest bg-slate-950/80 px-2.5 py-1 rounded-md border border-slate-800"
+              >Next Launch</span
+            >
+            <h4 class="text-xl font-bold font-display text-white mt-2">
+              Silent Resonance & Chrono Series
+            </h4>
+            <p class="text-xs text-slate-300 mt-1 leading-relaxed">
+              Immersive tales detailing complex mechanics, time travel, and star
+              systems crafted for direct reader engagement.
+            </p>
+          </div>
+        </div>
+      </div>
     </main>
 
     <!-- Bottom Content Tracks Grid -->
     <section class="max-w-7xl mx-auto px-6 w-full pb-16">
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-            
-            <!-- Track 01 -->
-            <div class="bg-slate-900/40 border border-slate-800/80 p-6 rounded-2xl hover:border-slate-700 transition-colors">
-                <span class="text-[10px] font-mono text-rose-400 uppercase tracking-widest">// Track 01</span>
-                <h3 class="text-lg font-bold text-white mt-1">Sci-Fi Writing Vault</h3>
-                <p class="text-xs text-slate-400 mt-2 leading-relaxed">Core manuscripts, universe worldbuilding lore, and futuristic narrative chapters.</p>
-            </div>
-
-            <!-- Track 02 -->
-            <div class="bg-slate-900/40 border border-slate-800/80 p-6 rounded-2xl hover:border-slate-700 transition-colors">
-                <span class="text-[10px] font-mono text-rose-400 uppercase tracking-widest">// Track 02</span>
-                <h3 class="text-lg font-bold text-white mt-1">Poetry & Short Stories</h3>
-                <p class="text-xs text-slate-400 mt-2 leading-relaxed">Independent blog posts and conceptual pieces tailored for direct reader engagement.</p>
-            </div>
-
-            <!-- Track 03 -->
-            <div class="bg-slate-900/40 border border-slate-800/80 p-6 rounded-2xl hover:border-slate-700 transition-colors">
-                <span class="text-[10px] font-mono text-rose-400 uppercase tracking-widest">// Track 03</span>
-                <h3 class="text-lg font-bold text-white mt-1">Sovereign Resources</h3>
-                <p class="text-xs text-slate-400 mt-2 leading-relaxed">Independent digital assets, study guides, and cross-platform publishing links.</p>
-            </div>
-
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <!-- Track 01 -->
+        <div
+          class="bg-slate-900/40 border border-slate-800/80 p-6 rounded-2xl hover:border-slate-700 transition-colors"
+        >
+          <span
+            class="text-[10px] font-mono text-rose-400 uppercase tracking-widest"
+            >// Track 01</span
+          >
+          <h3 class="text-lg font-bold text-white mt-1">
+            Sci-Fi Writing Vault
+          </h3>
+          <p class="text-xs text-slate-400 mt-2 leading-relaxed">
+            Core manuscripts, universe worldbuilding lore, and futuristic
+            narrative chapters.
+          </p>
         </div>
+
+        <!-- Track 02 -->
+        <div
+          class="bg-slate-900/40 border border-slate-800/80 p-6 rounded-2xl hover:border-slate-700 transition-colors"
+        >
+          <span
+            class="text-[10px] font-mono text-rose-400 uppercase tracking-widest"
+            >// Track 02</span
+          >
+          <h3 class="text-lg font-bold text-white mt-1">
+            Poetry & Short Stories
+          </h3>
+          <p class="text-xs text-slate-400 mt-2 leading-relaxed">
+            Independent blog posts and conceptual pieces tailored for direct
+            reader engagement.
+          </p>
+        </div>
+
+        <!-- Track 03 -->
+        <div
+          class="bg-slate-900/40 border border-slate-800/80 p-6 rounded-2xl hover:border-slate-700 transition-colors"
+        >
+          <span
+            class="text-[10px] font-mono text-rose-400 uppercase tracking-widest"
+            >// Track 03</span
+          >
+          <h3 class="text-lg font-bold text-white mt-1">Sovereign Resources</h3>
+          <p class="text-xs text-slate-400 mt-2 leading-relaxed">
+            Independent digital assets, study guides, and cross-platform
+            publishing links.
+          </p>
+        </div>
+      </div>
     </section>
 
     <!-- Footer -->
-    <footer class="w-full border-t border-slate-800/60 bg-slate-950 px-6 py-6 text-xs text-slate-500 flex flex-col sm:flex-row items-center justify-between gap-4">
-        <div>
-            &copy; 2026 Paul Sergent. All standalone local operations authorized.
+    <footer
+      class="w-full border-t border-slate-800/60 bg-slate-950 px-6 py-6 text-xs text-slate-500 flex flex-col sm:flex-row items-center justify-between gap-4"
+    >
+      <div>
+        &copy; 2026 Paul Sergent. All standalone local operations authorized.
+      </div>
+      <div class="flex items-center space-x-6 font-mono">
+        <span class="text-slate-400"
+          >Sandbox Target:
+          <span class="text-rose-400">paulsergent.us</span></span
+        >
+        <div class="flex space-x-4">
+          <a href="#" class="hover:text-slate-300 transition-colors">FB</a>
+          <a href="#" class="hover:text-slate-300 transition-colors">X</a>
+          <a href="#" class="hover:text-slate-300 transition-colors">TRUTH</a>
+          <a href="#" class="hover:text-rose-400 transition-colors font-bold"
+            >MILKSHAKE</a
+          >
         </div>
-        <div class="flex items-center space-x-6 font-mono">
-            <span class="text-slate-400">Sandbox Target: <span class="text-rose-400">paulsergent.us</span></span>
-            <div class="flex space-x-4">
-                <a href="#" class="hover:text-slate-300 transition-colors">FB</a>
-                <a href="#" class="hover:text-slate-300 transition-colors">X</a>
-                <a href="#" class="hover:text-slate-300 transition-colors">TRUTH</a>
-                <a href="#" class="hover:text-rose-400 transition-colors font-bold">MILKSHAKE</a>
-            </div>
-        </div>
+      </div>
     </footer>
 
     <!-- Logic Scripts for Diagnostics and Audio -->
     <script>
-        // Diagnostic Terminal Logic
-        let diagTimeout;
-        function runDiagnostics() {
-            const modal = document.getElementById('diagnostic-modal');
-            const output = document.getElementById('diagnostic-output');
-            
-            modal.classList.remove('hidden');
-            modal.classList.add('flex');
-            output.innerHTML = ''; 
+      // Diagnostic Terminal Logic
+      let diagTimeout;
+      function runDiagnostics() {
+        const modal = document.getElementById("diagnostic-modal");
+        const output = document.getElementById("diagnostic-output");
 
-            const lines = [
-                "> INITIATING SOVEREIGN NODE BYPASS PROTOCOLS...",
-                "> CHECKING LOCAL DIRECTORY LINKS........ [ OK ]",
-                "> VERIFYING MEDIA ASSETS................ [ OK ]",
-                "> SCANNING FLIPBOOK MANUSCRIPT INDEX.... [ SECURED ]",
-                "> PINGING SUB-FREQUENCY AUDIO CHANNELS.. [ ESTABLISHED ]",
-                "> ALL SYSTEMS NOMINAL. DIGITAL HUB ACTIVE."
-            ];
+        modal.classList.remove("hidden");
+        modal.classList.add("flex");
+        output.innerHTML = "";
 
-            let delay = 0;
-            lines.forEach((line, index) => {
-                diagTimeout = setTimeout(() => {
-                    output.innerHTML += `<p class="mb-1 opacity-0 animate-[fadeIn_0.3s_forwards]">${line}</p>`;
-                    output.scrollTop = output.scrollHeight;
-                }, delay);
-                delay += 800; // Type next line every 800ms
-            });
+        const lines = [
+          "> INITIATING SOVEREIGN NODE BYPASS PROTOCOLS...",
+          "> CHECKING LOCAL DIRECTORY LINKS........ [ OK ]",
+          "> VERIFYING MEDIA ASSETS................ [ OK ]",
+          "> SCANNING FLIPBOOK MANUSCRIPT INDEX.... [ SECURED ]",
+          "> PINGING SUB-FREQUENCY AUDIO CHANNELS.. [ ESTABLISHED ]",
+          "> ALL SYSTEMS NOMINAL. DIGITAL HUB ACTIVE.",
+        ];
+
+        let delay = 0;
+        lines.forEach((line, index) => {
+          diagTimeout = setTimeout(() => {
+            output.innerHTML += `<p class="mb-1 opacity-0 animate-[fadeIn_0.3s_forwards]">${line}</p>`;
+            output.scrollTop = output.scrollHeight;
+          }, delay);
+          delay += 800; // Type next line every 800ms
+        });
+      }
+
+      function closeDiagnostics() {
+        const modal = document.getElementById("diagnostic-modal");
+        modal.classList.add("hidden");
+        modal.classList.remove("flex");
+        clearTimeout(diagTimeout); // Stop typing if closed early
+      }
+
+      // Audio Feed Logic
+      function testAudioFeed() {
+        const btn = document.getElementById("audio-btn");
+        const originalText = "Test Audio Feed";
+
+        // Visual feedback on button
+        btn.innerHTML = "PLAYING FEED...";
+        btn.classList.add("text-rose-400", "border-rose-500/50");
+
+        // Play the t3_cpu.wav file
+        const audio = new Audio("t3_cpu.wav");
+
+        audio.play().catch((e) => {
+          console.log(
+            "Audio file not found, falling back to speech synthesis.",
+          );
+          const msg = new SpeechSynthesisUtterance(
+            "Audio feed sub-frequency channel active. Synthesizer handshake successful.",
+          );
+          msg.rate = 1.0;
+          msg.pitch = 0.9;
+
+          msg.onend = resetBtn;
+          window.speechSynthesis.speak(msg);
+        });
+
+        audio.onended = resetBtn;
+
+        function resetBtn() {
+          btn.innerHTML = originalText;
+          btn.classList.remove("text-rose-400", "border-rose-500/50");
         }
-
-        function closeDiagnostics() {
-            const modal = document.getElementById('diagnostic-modal');
-            modal.classList.add('hidden');
-            modal.classList.remove('flex');
-            clearTimeout(diagTimeout); // Stop typing if closed early
-        }
-
-        // Audio Feed Logic
-        function testAudioFeed() {
-            const btn = document.getElementById('audio-btn');
-            const originalText = "Test Audio Feed";
-            
-            // Visual feedback on button
-            btn.innerHTML = "PLAYING FEED...";
-            btn.classList.add('text-rose-400', 'border-rose-500/50');
-
-            // Play the t3_cpu.wav file
-            const audio = new Audio('t3_cpu.wav');
-            
-            audio.play().catch(e => {
-                console.log("Audio file not found, falling back to speech synthesis.");
-                const msg = new SpeechSynthesisUtterance("Audio feed sub-frequency channel active. Synthesizer handshake successful.");
-                msg.rate = 1.0;
-                msg.pitch = 0.9;
-                
-                msg.onend = resetBtn;
-                window.speechSynthesis.speak(msg);
-            });
-
-            audio.onended = resetBtn;
-
-            function resetBtn() {
-                btn.innerHTML = originalText;
-                btn.classList.remove('text-rose-400', 'border-rose-500/50');
-            }
-        }
+      }
     </script>
-</body>
+  </body>
 </html>
