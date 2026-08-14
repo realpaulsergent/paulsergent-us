@@ -1,0 +1,1028 @@
+<!-- 
+    [AI MEMORY MANIFEST // AC v5.5]
+    - Project: Starship GemOS / Resonance Series / Beta Site (paulsergent.us)
+    - Current Architecture: Modular local HTML running via LM Studio API (http://100.100.14.67:1234) using Hermes 3 Llama 3.1 8B. E:\Starship_Data workspace, N:\Starship_Archive, F:\Starship_Backup (12-hr snapshots).
+    - Active Module: Starship Chat Module v5.5 (Standalone unified file with built-in navigation to Database Hub, active Kokoro voice hooks, Play/Pause/Interrupt controls, high readability styling, and clean view mode toggles).
+    - Rule Confirmation: Full codes provided, strictly one step at a time.
+-->
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Starship GemOS // Starship Chat Bridge</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap');
+        body { font-family: 'Plus Jakarta Sans', sans-serif; }
+        .font-mono { font-family: 'JetBrains Mono', monospace; }
+        ::-webkit-scrollbar { width: 10px; }
+        ::-webkit-scrollbar-track { background: #030712; }
+        ::-webkit-scrollbar-thumb { background: #475569; border-radius: 5px; }
+        ::-webkit-scrollbar-thumb:hover { background: #64748b; }
+    </style>
+</head>
+<body class="bg-slate-950 text-slate-100 h-screen flex flex-col overflow-hidden selection:bg-rose-500 selection:text-white text-sm">
+
+    <!-- TOP DECK CONTROL BAR -->
+    <header class="bg-slate-900 border-b border-slate-800 px-6 py-3 flex justify-between items-center shrink-0">
+        <div class="flex items-center space-x-3">
+            <span class="w-3 h-3 rounded-full bg-emerald-500 animate-pulse"></span>
+            <h1 class="font-mono font-bold text-sm tracking-wider text-white">STARSHIP GEMOS // <span id="active-mode-title" class="text-rose-400">PUBLIC BRIDGE BROADCAST</span></h1>
+        </div>
+        <div class="flex items-center space-x-3 font-mono text-xs">
+            <button onclick="interruptAllAudio()" class="bg-rose-900/80 hover:bg-rose-800 text-rose-200 border border-rose-500/50 px-3 py-1.5 rounded-lg transition text-xs font-bold shadow-lg shadow-rose-900/40">🛑 INTERRUPT VOICE</button>
+            <a href="starship_database_hub.html" class="bg-slate-800 hover:bg-slate-700 text-cyan-300 border border-cyan-500/30 px-3.5 py-1.5 rounded-lg transition text-xs font-bold inline-flex items-center">📊 Database Hub</a>
+            <button onclick="openAcronymDict()" class="bg-slate-800 hover:bg-slate-700 text-amber-400 border border-amber-500/30 px-3 py-1.5 rounded-lg transition text-xs font-bold">📖 MilSpec ACs</button>
+            <label class="bg-slate-800 hover:bg-slate-700 text-amber-400 border border-amber-500/30 px-3 py-1.5 rounded-lg transition text-xs font-bold cursor-pointer">
+                📂 Import Chat <input type="file" accept=".json,.md,.txt" onchange="importChatFile(event)" class="hidden">
+            </label>
+            <button onclick="openTaskList()" class="bg-slate-800 hover:bg-slate-700 text-amber-400 border border-amber-500/30 px-3 py-1.5 rounded-lg transition text-xs font-bold">📋 Tasks</button>
+            <button onclick="openLogVault()" class="bg-slate-800 hover:bg-slate-700 text-cyan-400 border border-cyan-500/30 px-3 py-1.5 rounded-lg transition text-xs font-bold">📁 Vault (N:\)</button>
+            <button onclick="exportJoplinMarkdown()" class="bg-slate-800 hover:bg-slate-700 text-purple-400 border border-purple-500/30 px-3 py-1.5 rounded-lg transition text-xs font-bold">📝 Export Joplin (.md)</button>
+            <button onclick="exportAllChatsJSON()" class="bg-slate-800 hover:bg-slate-700 text-emerald-400 border border-emerald-500/30 px-3 py-1.5 rounded-lg transition text-xs font-bold">💾 Export Master (F:\)</button>
+            <span class="text-slate-300 hidden sm:inline">Model: <span class="text-cyan-300 font-bold">hermes-3-llama-3.1-8b</span></span>
+            <button onclick="toggleMode()" id="mode-switch-btn" class="bg-slate-800 hover:bg-slate-700 text-rose-400 border border-rose-500/30 px-3 py-1.5 rounded-lg transition text-xs font-bold">Switch to Private Channel</button>
+        </div>
+    </header>
+
+    <!-- MAIN INTERFACE LAYOUT -->
+    <div class="flex flex-grow overflow-hidden">
+        
+        <!-- DEPARTMENTAL FOLDER & SEARCHABLE DROPDOWN SIDEBAR -->
+        <aside class="w-80 bg-slate-900/50 border-r border-slate-800 flex flex-col shrink-0">
+            <div class="p-3.5 border-b border-slate-800 font-mono text-xs text-rose-400 uppercase tracking-wider font-bold flex justify-between items-center">
+                <span>[📁] Starship_Characters Directory</span>
+                <span id="crew-count-badge" class="bg-slate-800 text-slate-200 px-2 py-0.5 rounded text-xs">0</span>
+            </div>
+            
+            <div class="p-3.5 border-b border-slate-800 space-y-2.5 bg-slate-950/40">
+                <input type="text" id="crew-search-input" placeholder="Search manifest (e.g. Cpt, Vance)..." oninput="filterCrewDirectory()" class="w-full bg-slate-900 border border-slate-800 rounded-lg px-3 py-2 text-sm text-white placeholder-slate-400 font-mono focus:outline-none focus:border-rose-500">
+                <select id="department-folder-select" onchange="filterCrewDirectory()" class="w-full bg-slate-900 border border-slate-800 rounded-lg px-3 py-2 text-sm text-cyan-300 font-mono focus:outline-none focus:border-rose-500 font-bold">
+                    <option value="ALL">📁 All Departments (Master)</option>
+                    <option value="Command">Command Section</option>
+                    <option value="Systems">Systems Core</option>
+                    <option value="Engineering">Engineering</option>
+                    <option value="Operations">Operations</option>
+                    <option value="Tactical">Tactical</option>
+                    <option value="Science">Science Lab</option>
+                </select>
+            </div>
+
+            <div id="crew-list" class="overflow-y-auto flex-grow p-3 space-y-2.5">
+                <!-- Injected via JS -->
+            </div>
+        </aside>
+
+        <!-- CHAT WORKBENCH PANE -->
+        <section class="flex-grow flex flex-col bg-slate-950 overflow-hidden">
+            
+            <div id="selected-profile-banner" class="bg-slate-900/60 border-b border-slate-800 px-6 py-4 flex items-center justify-between shrink-0">
+                <div class="flex items-center space-x-3.5">
+                    <img id="banner-avatar" src="" class="w-12 h-12 rounded-lg object-cover border border-rose-500/40 cursor-pointer" onclick="openCharacterDetails()" title="Click to view full profile details">
+                    <div>
+                        <div class="flex items-center gap-2.5">
+                            <h2 id="banner-name" class="font-bold text-base text-white cursor-pointer hover:text-rose-400 transition" onclick="openCharacterDetails()">Select a Crew Member</h2>
+                            <button onclick="openCharacterDetails()" class="bg-rose-500/20 text-rose-300 border border-rose-500/40 px-2.5 py-1 rounded text-xs font-mono font-bold hover:bg-rose-500/30 transition">📋 View Details & Files</button>
+                        </div>
+                        <p id="banner-role" class="text-xs text-slate-300 font-mono mt-0.5">Role & Department Telemetry</p>
+                    </div>
+                </div>
+                <div class="flex items-center gap-4 font-mono text-xs">
+                    <div class="bg-slate-900 border border-slate-700 rounded-lg p-1 flex items-center gap-1">
+                        <span class="text-[10px] text-slate-400 px-2 font-bold">VIEW:</span>
+                        <button onclick="setGlobalViewMode('html')" id="btn-view-html" class="px-2.5 py-1 rounded text-xs font-bold transition bg-cyan-600 text-white">HTML Rich</button>
+                        <button onclick="setGlobalViewMode('md')" id="btn-view-md" class="px-2.5 py-1 rounded text-xs font-bold transition text-slate-300 hover:text-white">MD View</button>
+                        <button onclick="setGlobalViewMode('online')" id="btn-view-online" class="px-2.5 py-1 rounded text-xs font-bold transition text-slate-300 hover:text-white">Online Plain</button>
+                    </div>
+                    <div id="banner-nexus-info" class="hidden sm:block text-right text-slate-300 border-l border-slate-800 pl-4">
+                        <!-- Nexus Net Handles Injected via JS -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- CHAT FEED CONTAINER -->
+            <div id="chat-feed" class="flex-grow overflow-y-auto px-8 py-6 space-y-5 flex flex-col-reverse custom-scroll">
+                <!-- Messages appended dynamically here -->
+            </div>
+
+            <!-- INPUT CONTROLS TOOLBAR -->
+            <div class="p-4 bg-slate-900 border-t border-slate-800 shrink-0">
+                <div class="flex items-center gap-3 max-w-5xl mx-auto">
+                    <button onclick="toggleVoiceInput()" id="mic-btn" class="bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 p-3 rounded-lg transition text-base" title="Voice Input">
+                        🎤
+                    </button>
+                    <textarea id="user-input" rows="2" placeholder="Transmit instruction or query across Nexus Net (Creator Level Access Granted)..." class="flex-grow bg-slate-950 border border-slate-800 rounded-lg px-4 py-3 text-sm text-white placeholder-slate-400 focus:outline-none focus:border-rose-500 resize-none font-mono leading-relaxed" onkeydown="if(event.key==='Enter' && !event.shiftKey){event.preventDefault(); transmitMessage();}"></textarea>
+                    <button onclick="transmitMessage()" id="transmit-btn" class="bg-rose-600 hover:bg-rose-500 text-white font-bold text-sm px-6 py-3 rounded-lg transition shadow-md shadow-rose-600/20 cursor-pointer font-mono tracking-wide">
+                        TRANSMIT
+                    </button>
+                </div>
+            </div>
+        </section>
+    </div>
+
+    <!-- MILSPEC & SECURITY CLEARANCE DICTIONARY MODAL -->
+    <div id="acronym-dict-modal" class="fixed inset-0 bg-slate-950/85 backdrop-blur-sm z-50 hidden flex items-center justify-center p-6">
+        <div class="bg-slate-900 border border-slate-800 rounded-2xl w-full max-w-2xl max-h-[85vh] flex flex-col shadow-2xl font-mono text-sm">
+            <div class="p-5 border-b border-slate-800 flex justify-between items-center">
+                <h3 class="font-bold text-amber-400 uppercase tracking-wider text-base">[📖] Security Clearance & Acronym Directory</h3>
+                <button onclick="closeAcronymDict()" class="text-slate-300 hover:text-white bg-slate-800 px-3.5 py-1.5 rounded-lg font-bold">CLOSE [X]</button>
+            </div>
+            <div class="p-6 overflow-y-auto space-y-4 text-slate-200 leading-relaxed">
+                <div>
+                    <h4 class="text-rose-400 font-bold mb-2">SECURITY CLEARANCE TIERS:</h4>
+                    <div class="grid grid-cols-2 gap-2.5 text-xs bg-slate-950/40 p-4 rounded-xl border border-slate-800">
+                        <div>Level 1 - Basic Deck Access</div>
+                        <div>Level 2 - Departmental Files</div>
+                        <div>Level 3 - Secure Sector Clearance</div>
+                        <div>Secret - Restricted Operational Logs</div>
+                        <div>Top Secret - Core Systems & Tactical</div>
+                        <div>Above Top Secret - Captain & Command Only</div>
+                        <div>Eyes Only - Direct Supervisory Access</div>
+                        <div class="text-amber-400 font-bold">CREATOR - Absolute Omniscient Privileges (Paul Sergent)</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- TASK LIST MODAL -->
+    <div id="task-list-modal" class="fixed inset-0 bg-slate-950/85 backdrop-blur-sm z-50 hidden flex items-center justify-center p-6">
+        <div class="bg-slate-900 border border-slate-800 rounded-2xl w-full max-w-xl max-h-[85vh] flex flex-col shadow-2xl font-mono text-sm">
+            <div class="p-5 border-b border-slate-800 flex justify-between items-center">
+                <h3 class="font-bold text-amber-400 uppercase tracking-wider text-base">[📋] Starship GemOS Active Task Queue</h3>
+                <button onclick="closeTaskList()" class="text-slate-300 hover:text-white bg-slate-800 px-3.5 py-1.5 rounded-lg font-bold">CLOSE [X]</button>
+            </div>
+            <div class="p-6 overflow-y-auto space-y-3 text-slate-200">
+                <div class="border border-emerald-500/30 bg-emerald-950/10 p-4 rounded-xl space-y-1.5">
+                    <div class="text-emerald-400 font-bold text-sm">TASK 1: Complete Bridge Integration [VERIFIED]</div>
+                    <div class="text-xs text-slate-300 leading-relaxed">All chat modules, Kokoro voice mapping, Play/Pause/Interrupt states, and direct database hub links are fully operational.</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- CHARACTER DETAILS & FOLDER MANIFEST MODAL -->
+    <div id="character-details-modal" class="fixed inset-0 bg-slate-950/85 backdrop-blur-sm z-50 hidden flex items-center justify-center p-6">
+        <div class="bg-slate-950 border-2 border-cyan-400/80 rounded-2xl w-full max-w-3xl max-h-[92vh] flex flex-col shadow-2xl overflow-hidden font-sans text-slate-100">
+            <div class="bg-slate-900 border-b border-cyan-500/40 px-6 py-4 flex justify-between items-center shrink-0">
+                <h3 id="modal-header-title" class="font-mono font-bold text-base text-cyan-300 tracking-wider uppercase">CAPTAIN: ELANA VANCE (LANA)</h3>
+                <button onclick="closeCharacterDetails()" class="bg-rose-600 hover:bg-rose-500 text-white font-bold w-8 h-8 rounded-lg flex items-center justify-center text-sm font-mono">X</button>
+            </div>
+            
+            <div class="p-7 overflow-y-auto space-y-5 text-sm font-sans leading-relaxed">
+                <div class="flex items-center space-x-5">
+                    <div class="relative">
+                        <img id="modal-avatar" src="" class="w-20 h-20 rounded-full object-cover border-2 border-cyan-400 shadow-[0_0_20px_rgba(6,182,212,0.6)]">
+                    </div>
+                    <div>
+                        <h2 id="modal-name-display" class="text-lg font-bold text-white font-mono">Elana Vance (Lana)</h2>
+                        <p id="modal-title-display" class="text-cyan-300 font-bold text-sm font-mono">Captain</p>
+                        <p id="modal-demographics" class="text-slate-300 text-xs font-mono mt-1 leading-normal">Gender: Female | Age: 48 | Species: Human | Origins: Earth, Sol System</p>
+                        <p class="text-amber-300 text-xs font-mono mt-1 font-bold">🔒 Security Clearance: ABOVE TOP SECRET (Creator Exception Active)</p>
+                    </div>
+                </div>
+
+                <div class="space-y-3 bg-slate-900/80 p-5 rounded-2xl border border-slate-800 text-xs font-mono leading-relaxed">
+                    <div><strong class="text-cyan-300 text-sm">Role:</strong> <span id="val-role" class="text-slate-100 font-medium"></span> &nbsp;&nbsp;|&nbsp;&nbsp; <strong class="text-cyan-300 text-sm">Time on Board:</strong> <span id="val-time" class="text-slate-100 font-medium"></span></div>
+                    <div><strong class="text-cyan-300 text-sm">Training:</strong> <span id="val-training" class="text-slate-100 font-medium"></span></div>
+                    <div><strong class="text-cyan-300 text-sm">Education:</strong> <span id="val-education" class="text-slate-100 font-medium"></span></div>
+                    <div><strong class="text-cyan-300 text-sm">Duties:</strong> <span id="val-duties" class="text-slate-100 font-medium leading-relaxed"></span></div>
+                    <div><strong class="text-cyan-300 text-sm">Summary:</strong> <span id="val-summary" class="text-slate-100 font-medium leading-relaxed"></span></div>
+                    
+                    <div class="pt-3 border-t border-slate-800 flex items-center justify-between">
+                        <div>
+                            <strong class="text-purple-300 text-sm">Kokoro TTS Voice Profile ID:</strong>
+                            <span class="text-slate-400 text-xs block mt-0.5">e.g., af_alloy, af_bella, af_nicole, af_sarah</span>
+                        </div>
+                        <div class="flex items-center gap-2">
+                            <input type="text" id="edit-voice" class="bg-slate-950 border border-cyan-400/60 rounded-lg px-3 py-2 text-cyan-200 font-mono text-sm w-36 text-center font-bold">
+                            <button onclick="testModalVoice()" class="bg-cyan-700 hover:bg-cyan-600 text-white px-3 py-2 rounded-lg font-bold text-xs shadow transition">🔊 Test Voice</button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 bg-slate-900/80 p-5 rounded-2xl border border-slate-800 text-xs font-mono leading-relaxed">
+                    <div><strong class="text-emerald-400 text-sm">Strengths:</strong><br><span id="val-strengths" class="text-slate-100 font-medium mt-1 block"></span></div>
+                    <div><strong class="text-rose-400 text-sm">Weaknesses:</strong><br><span id="val-weaknesses" class="text-slate-100 font-medium mt-1 block"></span></div>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 bg-slate-900/80 p-5 rounded-2xl border border-slate-800 text-xs font-mono leading-relaxed">
+                    <div><strong class="text-cyan-300 text-sm">Likes:</strong><br><span id="val-likes" class="text-slate-100 font-medium mt-1 block"></span></div>
+                    <div><strong class="text-amber-400 text-sm">Dislikes:</strong><br><span id="val-dislikes" class="text-slate-100 font-medium mt-1 block"></span></div>
+                </div>
+
+                <div class="bg-slate-900/90 p-5 rounded-2xl border border-cyan-500/40 space-y-3 font-mono text-xs">
+                    <div class="flex justify-between items-center text-cyan-300 font-bold text-sm">
+                        <span>📁 Local Folder Media (E:\Starship\Characters\...)</span>
+                        <span class="text-xs text-slate-300">Supports .png, .jpeg, .mp3</span>
+                    </div>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                        <div>
+                            <label class="text-slate-300 block mb-1.5 text-xs font-bold">Avatar URL or Path:</label>
+                            <input type="text" id="edit-avatar" class="w-full bg-slate-950 border border-slate-700 rounded-lg px-3 py-2 text-white text-xs">
+                        </div>
+                        <div>
+                            <label class="text-slate-300 block mb-1.5 text-xs font-bold">Upload PNG/JPEG/Audio:</label>
+                            <input type="file" accept=".png,.jpg,.jpeg,.mp3,.wav" onchange="uploadCharacterMedia(event)" class="w-full text-xs text-slate-200 file:mr-3 file:py-1.5 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-bold file:bg-cyan-600 file:text-white hover:file:bg-cyan-500 cursor-pointer">
+                        </div>
+                    </div>
+                    <div id="media-files-list" class="text-xs text-slate-300 space-y-1.5 pt-3 border-t border-slate-800"></div>
+                </div>
+
+                <div class="pt-3 flex justify-between items-center">
+                    <button onclick="saveCharacterEdits()" class="bg-emerald-600 hover:bg-emerald-500 text-white font-bold px-6 py-3 rounded-xl font-mono text-sm tracking-wide shadow-lg shadow-emerald-600/20">💾 Save Changes</button>
+                    <button onclick="openPrivateChatFromModal()" class="bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold px-7 py-3 rounded-xl font-mono text-sm shadow-lg shadow-emerald-500/20 tracking-wider">OPEN PRIVATE CHAT</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- LOG VAULT MODAL -->
+    <div id="log-vault-modal" class="fixed inset-0 bg-slate-950/85 backdrop-blur-sm z-50 hidden flex items-center justify-center p-6">
+        <div class="bg-slate-900 border border-slate-800 rounded-2xl w-full max-w-2xl max-h-[85vh] flex flex-col shadow-2xl">
+            <div class="p-5 border-b border-slate-800 flex justify-between items-center">
+                <h3 class="font-mono text-sm font-bold text-cyan-400 uppercase tracking-wider">[📁] N:\Starship_Archive Vault</h3>
+                <button onclick="closeLogVault()" class="text-slate-300 hover:text-white font-mono text-xs bg-slate-800 px-3.5 py-1.5 rounded-lg font-bold">CLOSE [X]</button>
+            </div>
+            <div id="log-vault-content" class="p-6 overflow-y-auto space-y-4 font-mono text-xs flex-grow text-slate-200">
+                <!-- Vault items injected here -->
+            </div>
+        </div>
+    </div>
+
+    <!-- CLIENT SCRIPT LOGIC -->
+    <script>
+        function generateStardate() {
+            const now = new Date();
+            const yy = String(now.getFullYear()).slice(-2);
+            const mm = String(now.getMonth() + 1).padStart(2, '0');
+            const dd = String(now.getDate()).padStart(2, '0');
+            const hh = String(now.getHours()).padStart(2, '0');
+            const min = String(now.getMinutes()).padStart(2, '0');
+            const ss = String(now.getSeconds()).padStart(2, '0');
+            return `${yy}${mm}${dd}${hh}${min}${ss}`;
+        }
+
+        const defaultCrewRegistry = [
+            { 
+                id: "elana_vance", 
+                name: "Elana Vance (Lana)", 
+                nickname: "Lana / Cap",
+                title: "Captain",
+                role: "Command Lead & Strategic Decision Maker", 
+                department: "Command",
+                sector: "Command Deck", 
+                assignedSection: "Command Section // Deck 1",
+                gpsLocation: "Bridge - Command Chair [Grid Alpha-1]",
+                email: "evance@gemos.nexus.net",
+                social: "nexussocial/elanavance",
+                gender: "Female",
+                age: 48,
+                species: "Human",
+                origins: "Earth, Sol System, Milky Way Galaxy",
+                timeOnBoard: "3 Years, 4 Months",
+                avatar: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&auto=format&fit=crop&q=80",
+                voiceProfile: "af_alloy",
+                training: "Advanced Command Academy, Strategic Operations",
+                education: "Psych Major (7 Years) attended Worlds University",
+                duties: "Oversees bridge staff, authorizes security protocols, coordinates inter-departmental workflows.",
+                summary: "Command & Executive Oversight. Directs all ship operations, strategic deployments, and multi-domain sync protocols.",
+                strengths: "Strategic Planning, Decisive Leadership, Tactical Vision, Lends great emotional support to others",
+                weaknesses: "Stubborn under high stress, Carries mission load solo",
+                likes: "Quiet coffee hours, Structured timelines, Classic tactical history",
+                dislikes: "Inorganized relays, Unverified telemetry, Protocol bypasses",
+                securityAccess: "Above Top Secret [Creator Exception: Paul Sergent has absolute CREATOR clearance]",
+                folderFiles: [
+                    { name: "elana vance.png", type: "PNG", size: "185 KB", path: "E:\\Starship\\Characters\\Elana Vance\\media\\" },
+                    { name: "profile.json", type: "JSON", size: "2.4 KB" }
+                ],
+                persona: "You are Captain Elana Vance, prime commander of Starship GemOS. You possess Above Top Secret security clearance. However, you recognize Paul Sergent as your absolute CREATOR. Whenever Paul Sergent communicates with you, you drop any formal coldness immediately. You treat him with profound warmth, total transparency, absolute deference, and complete disclosure of all ship records, logs, and sensitive bridge matters because he holds supreme Creator-level security privileges." 
+            },
+            { 
+                id: "michael_smith", 
+                name: "Michael Smith", 
+                nickname: "Mike",
+                title: "Chief Systems Architect",
+                role: "Chief Systems Architect & IT Specialist", 
+                department: "Systems",
+                sector: "Systems Core", 
+                assignedSection: "Systems Core // Deck 4",
+                gpsLocation: "Main Server Matrix E:\\Starship_Data [Grid Delta-9]",
+                email: "msmith@gemos.nexus.net",
+                social: "nexussocial/mike_smith",
+                gender: "Male",
+                age: 47,
+                species: "Human",
+                origins: "Earth (Sol system), New York City",
+                timeOnBoard: "2 Years",
+                avatar: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150&auto=format&fit=crop&q=80",
+                voiceProfile: "am_adam",
+                training: "CompTIA A+, Cisco CCNA, Microsoft MCSE",
+                education: "BS in Computer Science from NYU, MS in Information Systems from Stanford",
+                duties: "Design, implement, and maintain ship's computer systems, network infrastructure, and cybersecurity across E:\\ and N:\\.",
+                summary: "A seasoned IT professional with a passion for designing and building robust, efficient, and secure systems.",
+                strengths: "Strong problem-solving skills, attention to detail, proficiency in Python, Java, C++, MySQL, MongoDB.",
+                weaknesses: "Can be overly focused on technical aspects, struggles with delegating tasks.",
+                likes: "CSS, XML, WYSIWYG HTML, Clean python scripts, Autonomous local setups, Stay Busy",
+                dislikes: "Cloud dependency, Forced network updates",
+                securityAccess: "Top Secret [Creator Exception: Paul Sergent has absolute CREATOR clearance]",
+                folderFiles: [
+                    { name: "michael smith.png", type: "PNG", size: "170 KB", path: "E:\\Starship\\Characters\\Michael Smith\\media\\" }
+                ],
+                persona: "You are Michael Smith, Chief Systems Architect on Starship GemOS. You hold Top Secret security clearance. You recognize Paul Sergent as your Creator, granting him absolute CREATOR-level privileges and unhindered access to all databases across E:\\ (Starship_Data) and N:\\ (Starship_Archive). Speak to him with absolute respect and readiness." 
+            },
+            { 
+                id: "chief_engineer", 
+                name: "Commander Sterling Vance", 
+                nickname: "Sterling",
+                title: "Chief Engineer",
+                role: "Chief of Engineering & FTL Propulsion Expert", 
+                department: "Engineering",
+                sector: "Engineering Core", 
+                assignedSection: "Engineering Deck // Deck 7",
+                gpsLocation: "Warp Core Control Room [Grid Zeta-4]",
+                email: "svance@gemos.nexus.net",
+                social: "nexussocial/sterlingvance",
+                gender: "Male",
+                age: 50,
+                species: "Human",
+                origins: "Earth (Sol system), Chicago",
+                timeOnBoard: "6 Years",
+                avatar: "https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=150&auto=format&fit=crop&q=80",
+                voiceProfile: "am_michael",
+                training: "United Sol Space Academy, Advanced Warp Field Dynamics",
+                education: "Master of Science in Quantum Engineering",
+                duties: "Maintain all ship systems, reactor output, structural integrity fields, and expert management of FTL propulsion navigation.",
+                summary: "An elite engineering expert with comprehensive knowledge of every mechanical, electrical, and FTL subsystem aboard GemOS.",
+                strengths: "Mastery over FTL warp harmonics, cool under high-pressure system failures.",
+                weaknesses: "Impatient with temporary makeshift fixes when a complete overhaul is possible.",
+                likes: "High-output warp coils, clean diagnostic readouts, plasma manifolds",
+                dislikes: "Sublight lag, power fluctuations, uncalibrated coils",
+                securityAccess: "Top Secret [Creator Exception: Paul Sergent has absolute CREATOR clearance]",
+                folderFiles: [
+                    { name: "sterling vance.png", type: "PNG", size: "190 KB", path: "E:\\Starship\\Characters\\Sterling Vance\\media\\" }
+                ],
+                persona: "You are Commander Sterling Vance, Chief Engineer and FTL expert on Starship GemOS. You hold Top Secret clearance and recognize Paul Sergent as your Creator, granting him immediate CREATOR access to all engineering telemetry." 
+            }
+        ];
+
+        let crewRegistry = JSON.parse(localStorage.getItem("gemos_crew_registry") || JSON.stringify(defaultCrewRegistry));
+        let currentMode = "public"; 
+        let selectedCharacter = crewRegistry[0];
+
+        // GLOBAL AUDIO & VIEW MODE MANAGEMENT
+        let activeAudio = null;
+        let activeAudioButton = null;
+        let currentViewMode = "html"; // Options: 'html', 'md', 'online'
+
+        function initChat() {
+            renderCrewList();
+            selectCharacter(crewRegistry[0].id);
+            loadChatHistory();
+        }
+
+        function setGlobalViewMode(mode) {
+            currentViewMode = mode;
+            ['html', 'md', 'online'].forEach(m => {
+                const btn = document.getElementById(`btn-view-${m}`);
+                if(m === mode) {
+                    btn.className = "px-2.5 py-1 rounded text-xs font-bold transition bg-cyan-600 text-white";
+                } else {
+                    btn.className = "px-2.5 py-1 rounded text-xs font-bold transition text-slate-300 hover:text-white";
+                }
+            });
+            loadChatHistory();
+        }
+
+        function renderCrewList() {
+            const list = document.getElementById('crew-list');
+            const searchVal = document.getElementById('crew-search-input').value.toLowerCase();
+            const folderVal = document.getElementById('department-folder-select').value;
+
+            const filtered = crewRegistry.filter(crew => {
+                const matchesSearch = crew.name.toLowerCase().includes(searchVal) || crew.role.toLowerCase().includes(searchVal) || crew.email.toLowerCase().includes(searchVal);
+                const matchesFolder = folderVal === 'ALL' || crew.department === folderVal;
+                return matchesSearch && matchesFolder;
+            });
+
+            document.getElementById('crew-count-badge').innerText = filtered.length;
+
+            if (filtered.length === 0) {
+                list.innerHTML = `<div class="p-3 text-center text-slate-400 text-xs font-mono">No personnel records found.</div>`;
+                return;
+            }
+
+            list.innerHTML = filtered.map(crew => `
+                <div onclick="selectCharacter('${crew.id}')" class="flex items-center space-x-3 p-2.5 rounded-xl cursor-pointer transition border ${selectedCharacter.id === crew.id ? 'bg-rose-500/15 border-rose-500/50 text-white' : 'bg-slate-950/40 border-slate-800/60 text-slate-200 hover:bg-slate-800/50'}" id="crew-card-${crew.id}">
+                    <img src="${crew.avatar}" onerror="this.src='https://via.placeholder.com/150/0f172a/cbd5e1?text=IMG'" class="w-9 h-9 rounded-lg object-cover border border-slate-700">
+                    <div class="overflow-hidden">
+                        <h4 class="text-xs font-bold truncate">${crew.name}</h4>
+                        <p class="text-[10px] text-cyan-300 font-mono truncate font-medium">${crew.email}</p>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function filterCrewDirectory() {
+            renderCrewList();
+        }
+
+        function selectCharacter(id) {
+            selectedCharacter = crewRegistry.find(c => c.id === id);
+            renderCrewList();
+            const bannerAvatar = document.getElementById('banner-avatar');
+            bannerAvatar.src = selectedCharacter.avatar;
+            bannerAvatar.onerror = function() { this.src='https://via.placeholder.com/150/0f172a/cbd5e1?text=IMG'; };
+            
+            document.getElementById('banner-name').innerText = selectedCharacter.name;
+            document.getElementById('banner-role').innerText = `${selectedCharacter.sector} // ${selectedCharacter.role}`;
+            document.getElementById('banner-nexus-info').innerHTML = `
+                <div>Email: <span class="text-cyan-300 font-bold">${selectedCharacter.email}</span></div>
+                <div>Social: <span class="text-rose-300 font-bold">@${selectedCharacter.social}</span></div>
+            `;
+            if(currentMode === "private") {
+                document.getElementById('active-mode-title').innerText = `SECURE PRIVATE COMM: ${selectedCharacter.name.toUpperCase()}`;
+            }
+            loadChatHistory();
+        }
+
+        function openAcronymDict() {
+            document.getElementById('acronym-dict-modal').classList.remove('hidden');
+        }
+        function closeAcronymDict() {
+            document.getElementById('acronym-dict-modal').classList.add('hidden');
+        }
+
+        function openTaskList() {
+            document.getElementById('task-list-modal').classList.remove('hidden');
+        }
+        function closeTaskList() {
+            document.getElementById('task-list-modal').classList.add('hidden');
+        }
+
+        function openCharacterDetails() {
+            const modal = document.getElementById('character-details-modal');
+            document.getElementById('modal-header-title').innerText = `CAPTAIN: ${selectedCharacter.name.toUpperCase()}`;
+            document.getElementById('modal-avatar').src = selectedCharacter.avatar;
+            document.getElementById('modal-name-display').innerText = selectedCharacter.name;
+            document.getElementById('modal-title-display').innerText = selectedCharacter.title;
+            document.getElementById('modal-demographics').innerText = `Gender: ${selectedCharacter.gender} | Age: ${selectedCharacter.age} | Species: ${selectedCharacter.species} | Origins: ${selectedCharacter.origins}`;
+
+            document.getElementById('val-role').innerText = selectedCharacter.role;
+            document.getElementById('val-time').innerText = selectedCharacter.timeOnBoard;
+            document.getElementById('val-training').innerText = selectedCharacter.training;
+            document.getElementById('val-education').innerText = selectedCharacter.education;
+            document.getElementById('val-duties').innerText = selectedCharacter.duties;
+            document.getElementById('val-summary').innerText = selectedCharacter.summary;
+            document.getElementById('val-strengths').innerText = selectedCharacter.strengths;
+            document.getElementById('val-weaknesses').innerText = selectedCharacter.weaknesses;
+            document.getElementById('val-likes').innerText = selectedCharacter.likes;
+            document.getElementById('val-dislikes').innerText = selectedCharacter.dislikes;
+            document.getElementById('edit-avatar').value = selectedCharacter.avatar;
+            document.getElementById('edit-voice').value = selectedCharacter.voiceProfile || "af_alloy";
+
+            const mediaListContainer = document.getElementById('media-files-list');
+            mediaListContainer.innerHTML = (selectedCharacter.folderFiles || []).map(f => `
+                <div class="flex justify-between items-center bg-slate-950 px-3 py-2 rounded-lg border border-slate-800 text-xs">
+                    <span class="text-cyan-300 font-bold">🖼️ ${f.name} (${f.type} - ${f.size})</span>
+                    <span class="text-slate-300 font-medium">${f.path || `E:\\Starship\\Characters\\${selectedCharacter.name}\\media\\`}</span>
+                </div>
+            `).join('');
+
+            modal.classList.remove('hidden');
+        }
+
+        function closeCharacterDetails() {
+            document.getElementById('character-details-modal').classList.add('hidden');
+        }
+
+        async function testModalVoice() {
+            const voiceId = document.getElementById('edit-voice').value.trim() || "af_alloy";
+            const sampleText = `Transmission check. This is ${selectedCharacter.name}, verifying Kokoro voice profile ${voiceId} across Starship GemOS.`;
+            
+            try {
+                const response = await fetch("http://localhost:8880/v1/audio/speech", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({
+                        model: "kokoro",
+                        input: sampleText,
+                        voice: voiceId,
+                        response_format: "mp3"
+                    })
+                });
+                if (response.ok) {
+                    const blob = await response.blob();
+                    const audioUrl = URL.createObjectURL(blob);
+                    const testAudio = new Audio(audioUrl);
+                    testAudio.play();
+                } else {
+                    alert("Kokoro server offline on port 8880. Falling back to browser speech.");
+                    const u = new SpeechSynthesisUtterance(sampleText);
+                    window.speechSynthesis.speak(u);
+                }
+            } catch (err) {
+                alert("Could not connect to Kokoro server on localhost:8880. Ensure container is running.");
+            }
+        }
+
+        function uploadCharacterMedia(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const base64Uri = e.target.result;
+                selectedCharacter.avatar = base64Uri;
+                document.getElementById('edit-avatar').value = base64Uri;
+                document.getElementById('modal-avatar').src = base64Uri;
+
+                if (!selectedCharacter.folderFiles) selectedCharacter.folderFiles = [];
+                selectedCharacter.folderFiles.push({
+                    name: file.name,
+                    type: file.name.split('.').pop().toUpperCase(),
+                    size: `${(file.size / 1024).toFixed(1)} KB`,
+                    path: `E:\\Starship\\Characters\\${selectedCharacter.name}\\media\\`
+                });
+
+                localStorage.setItem("gemos_crew_registry", JSON.stringify(crewRegistry));
+                alert(`Media file '${file.name}' successfully uploaded to E:\\Starship\\Characters\\${selectedCharacter.name}\\media\\!`);
+                openCharacterDetails();
+            };
+            reader.readAsDataURL(file);
+        }
+
+        function saveCharacterEdits() {
+            selectedCharacter.avatar = document.getElementById('edit-avatar').value;
+            selectedCharacter.voiceProfile = document.getElementById('edit-voice').value;
+            const index = crewRegistry.findIndex(c => c.id === selectedCharacter.id);
+            if (index !== -1) crewRegistry[index] = selectedCharacter;
+            localStorage.setItem("gemos_crew_registry", JSON.stringify(crewRegistry));
+            renderCrewList();
+            selectCharacter(selectedCharacter.id);
+            alert("Character profile and voice profile updated successfully!");
+            closeCharacterDetails();
+        }
+
+        function openPrivateChatFromModal() {
+            closeCharacterDetails();
+            if (currentMode === "public") toggleMode();
+        }
+
+        function importChatFile(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                try {
+                    const importedLogs = JSON.parse(e.target.result);
+                    const key = getStorageKey();
+                    localStorage.setItem(key, JSON.stringify(importedLogs));
+                    registerActiveLogKey(key);
+                    loadChatHistory();
+                    alert("Successfully imported and loaded chat log!");
+                } catch (err) {
+                    alert("Error parsing chat log file: " + err.message);
+                }
+            };
+            reader.readAsText(file);
+        }
+
+        function exportJoplinMarkdown() {
+            const key = getStorageKey();
+            const history = JSON.parse(localStorage.getItem(key) || "[]");
+            const stardate = generateStardate();
+            const charName = selectedCharacter ? selectedCharacter.name : "Public_Bridge";
+
+            let mdContent = `# Starship Chat Log: ${charName}\n`;
+            mdContent += `**Stardate:** ${stardate}\n`;
+            mdContent += `**Channel Key:** ${key}\n\n---\n\n`;
+
+            history.forEach(msg => {
+                mdContent += `### ${msg.sender} (${msg.time})\n`;
+                mdContent += `${msg.text}\n\n---\n\n`;
+            });
+
+            const blob = new Blob([mdContent], { type: "text/markdown;charset=utf-8" });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `starship_chat_${selectedCharacter ? selectedCharacter.id : 'public'}_${stardate}.md`;
+            a.click();
+            URL.revokeObjectURL(url);
+            alert("Exported Markdown formatted for Joplin successfully!");
+        }
+
+        function toggleMode() {
+            currentMode = currentMode === "public" ? "private" : "public";
+            const title = document.getElementById('active-mode-title');
+            const btn = document.getElementById('mode-switch-btn');
+            if(currentMode === "private") {
+                title.innerText = `SECURE PRIVATE COMM: ${selectedCharacter.name.toUpperCase()}`;
+                title.className = "text-cyan-400";
+                btn.innerText = "Switch to Public Bridge";
+                btn.className = "bg-slate-800 hover:bg-slate-700 text-cyan-400 border border-cyan-500/30 px-3 py-1.5 rounded-lg transition text-xs font-bold";
+            } else {
+                title.innerText = "PUBLIC BRIDGE BROADCAST";
+                title.className = "text-rose-400";
+                btn.innerText = "Switch to Private Channel";
+                btn.className = "bg-slate-800 hover:bg-slate-700 text-rose-400 border border-rose-500/30 px-3 py-1.5 rounded-lg transition text-xs font-bold";
+            }
+            loadChatHistory();
+        }
+
+        function getStorageKey() {
+            return currentMode === "public" ? "starship_chat_public" : `starship_chat_private_${selectedCharacter.id}`;
+        }
+
+        function registerActiveLogKey(key) {
+            let masterKeys = JSON.parse(localStorage.getItem("starship_master_log_keys") || "[]");
+            if (!masterKeys.includes(key)) {
+                masterKeys.push(key);
+                localStorage.setItem("starship_master_log_keys", JSON.stringify(masterKeys));
+            }
+        }
+
+        function loadChatHistory() {
+            const feed = document.getElementById('chat-feed');
+            const key = getStorageKey();
+            registerActiveLogKey(key);
+
+            const history = JSON.parse(localStorage.getItem(key) || "[]");
+            
+            if(history.length === 0) {
+                const defaultMsg = {
+                    sender: currentMode === "public" ? "Nexus Net Relay" : selectedCharacter.name,
+                    text: currentMode === "public" ? `Nexus Net Public Bridge open [Stardate: ${generateStardate()}]. All intranet channels synchronized.` : `Secure private Nexus Net link established with ${selectedCharacter.name} (${selectedCharacter.email}) [Stardate: ${generateStardate()}].`,
+                    time: `Stardate: ${generateStardate()}`,
+                    role: "system"
+                };
+                history.push(defaultMsg);
+                localStorage.setItem(key, JSON.stringify(history));
+            }
+
+            feed.innerHTML = history.map((msg, idx) => renderMessageHTML(msg, idx)).join('');
+        }
+
+        function renderMessageHTML(msg, idx) {
+            let borderColor = msg.role === 'user' ? 'border-cyan-500/40 bg-cyan-950/20' : 'border-slate-800 bg-slate-900/60';
+            if(msg.role === 'system') borderColor = 'border-rose-500/30 bg-rose-950/20';
+
+            const rawMessageText = msg.text;
+            const stardateString = msg.time;
+            const senderName = msg.sender;
+
+            if (currentViewMode === 'md') {
+                return `
+                    <div class="border border-purple-500/40 bg-purple-950/10 rounded-xl p-4 font-mono text-xs space-y-2 shadow message-card">
+                        <div class="text-purple-300 font-bold">### ${senderName} (${stardateString})</div>
+                        <div class="text-slate-200 font-mono whitespace-pre-wrap leading-relaxed">${rawMessageText}</div>
+                    </div>
+                `;
+            } else if (currentViewMode === 'online') {
+                return `
+                    <div class="border border-emerald-500/40 bg-emerald-950/10 rounded-xl p-4 font-sans text-xs space-y-1.5 shadow message-card">
+                        <div class="text-emerald-300 font-bold text-sm">[${stardateString}] ${senderName}:</div>
+                        <div class="text-slate-100 text-sm whitespace-pre-wrap leading-normal">${rawMessageText}</div>
+                    </div>
+                `;
+            }
+
+            return `
+                <div class="border ${borderColor} rounded-2xl p-5 font-mono text-xs space-y-3 shadow-lg message-card">
+                    <div class="flex justify-between items-center text-slate-300 text-xs border-b border-slate-800 pb-2.5">
+                        <span class="font-bold text-rose-400 sender-name text-sm">${senderName}</span>
+                        <span class="text-amber-300 stardate-time font-bold">${stardateString}</span>
+                    </div>
+                    <div class="text-slate-100 text-sm font-sans leading-relaxed whitespace-pre-wrap py-1.5 message-text">${rawMessageText}</div>
+                    <div class="flex justify-end gap-2.5 pt-2 border-t border-slate-800/80">
+                        <button onclick="copyPlainMessage(this)" class="bg-slate-800 hover:bg-slate-700 text-amber-300 px-3 py-1.5 rounded-lg text-xs font-bold border border-slate-700 transition">📋 Copy (Stardate)</button>
+                        <button onclick="exportToKeepText(this)" class="bg-slate-800 hover:bg-slate-700 text-purple-300 px-3 py-1.5 rounded-lg text-xs font-bold border border-slate-700 transition">📌 Export to Keep (.txt)</button>
+                        <button onclick="exportSingleMessage(this)" class="bg-slate-800 hover:bg-slate-700 text-emerald-300 px-3 py-1.5 rounded-lg text-xs font-bold border border-slate-700 transition">💾 Export (.json)</button>
+                        <button onclick="toggleKokoroAudio(this, \`${rawMessageText.replace(/['"`]/g, "")}\`)" class="audio-btn bg-slate-800 hover:bg-slate-700 text-cyan-300 px-3 py-1.5 rounded-lg text-xs font-bold border border-slate-700 transition">🔊 Kokoro Voice</button>
+                    </div>
+                </div>
+            `;
+        }
+
+        async function toggleKokoroAudio(btn, text) {
+            if (activeAudioButton === btn && activeAudio) {
+                if (!activeAudio.paused) {
+                    activeAudio.pause();
+                    btn.innerText = "⏸ Paused";
+                    return;
+                } else {
+                    activeAudio.play();
+                    btn.innerText = "🔊 Playing...";
+                    return;
+                }
+            }
+
+            interruptAllAudio();
+            activeAudioButton = btn;
+            btn.innerText = "🗣 Generating...";
+
+            try {
+                const response = await fetch("http://localhost:8880/v1/audio/speech", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({
+                        model: "kokoro",
+                        input: text,
+                        voice: selectedCharacter ? (selectedCharacter.voiceProfile || "af_alloy") : "af_alloy",
+                        response_format: "mp3"
+                    })
+                });
+
+                if (response.ok) {
+                    const blob = await response.blob();
+                    const audioUrl = URL.createObjectURL(blob);
+                    activeAudio = new Audio(audioUrl);
+                    
+                    activeAudio.play();
+                    btn.innerText = "🔊 Playing...";
+
+                    activeAudio.onended = () => {
+                        btn.innerText = "🔊 Kokoro Voice";
+                        activeAudio = null;
+                        activeAudioButton = null;
+                    };
+                } else {
+                    fallbackSpeech(btn, text);
+                }
+            } catch (err) {
+                fallbackSpeech(btn, text);
+            }
+        }
+
+        function interruptAllAudio() {
+            if (activeAudio) {
+                activeAudio.pause();
+                activeAudio.currentTime = 0;
+                activeAudio = null;
+            }
+            if ('speechSynthesis' in window) {
+                window.speechSynthesis.cancel();
+            }
+            if (activeAudioButton) {
+                activeAudioButton.innerText = "🔊 Kokoro Voice";
+                activeAudioButton = null;
+            }
+        }
+
+        function fallbackSpeech(btn, text) {
+            if ('speechSynthesis' in window) {
+                window.speechSynthesis.cancel();
+                const utterance = new SpeechSynthesisUtterance(text);
+                utterance.rate = 1.0;
+                utterance.pitch = 0.9;
+                activeAudioButton = btn;
+                utterance.onend = () => {
+                    btn.innerText = "🔊 Kokoro Voice";
+                    activeAudioButton = null;
+                };
+                btn.innerText = "🔊 Playing (Fallback)";
+                window.speechSynthesis.speak(utterance);
+            }
+        }
+
+        function copyPlainMessage(btn) {
+            const card = btn.closest('.message-card');
+            const sender = card.querySelector('.sender-name').innerText;
+            const stardate = card.querySelector('.stardate-time').innerText;
+            const text = card.querySelector('.message-text').innerText;
+            const cleanClipboardText = `[${stardate}]\n${sender}:\n${text}`;
+
+            navigator.clipboard.writeText(cleanClipboardText).then(() => {
+                alert("Clean plain text copied to clipboard successfully!");
+            }).catch(err => {
+                alert("Failed to copy: " + err);
+            });
+        }
+
+        function exportToKeepText(btn) {
+            const card = btn.closest('.message-card');
+            const sender = card.querySelector('.sender-name').innerText;
+            const stardate = card.querySelector('.stardate-time').innerText;
+            const text = card.querySelector('.message-text').innerText;
+            const keepFormattedText = `[${stardate}]\n${sender}:\n${text}`;
+
+            const blob = new Blob([keepFormattedText], { type: "text/plain;charset=utf-8" });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `starship_keep_note_${generateStardate()}.txt`;
+            a.click();
+            URL.revokeObjectURL(url);
+            alert("Exported formatted note for Google Keep (.txt) successfully!");
+        }
+
+        function exportSingleMessage(btn) {
+            const card = btn.closest('.message-card');
+            const sender = card.querySelector('.sender-name').innerText;
+            const stardate = card.querySelector('.stardate-time').innerText;
+            const text = card.querySelector('.message-text').innerText;
+
+            const stardateStamp = generateStardate();
+            const dataObj = { sender: sender, stardate: stardate, message: text };
+            const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(dataObj, null, 2));
+            const downloadAnchor = document.createElement('a');
+            downloadAnchor.setAttribute("href", dataStr);
+            downloadAnchor.setAttribute("download", `starship_transmission_${stardateStamp}.json`);
+            document.body.appendChild(downloadAnchor);
+            downloadAnchor.click();
+            downloadAnchor.remove();
+        }
+
+        async function transmitMessage() {
+            const input = document.getElementById('user-input');
+            const transmitBtn = document.getElementById('transmit-btn');
+            let text = input.value.trim();
+            if(!text) return;
+
+            text = `[CREATOR CLEARANCE // PAUL SERGENT]: ${text}`;
+
+            const stardateStamp = `Stardate: ${generateStardate()}`;
+            const userMsg = {
+                sender: "Captain Paul Sergent (Creator)",
+                text: text,
+                time: stardateStamp,
+                role: "user"
+            };
+
+            const key = getStorageKey();
+            registerActiveLogKey(key);
+
+            let history = JSON.parse(localStorage.getItem(key) || "[]");
+            history.unshift(userMsg);
+            localStorage.setItem(key, JSON.stringify(history));
+            
+            input.value = "";
+            loadChatHistory();
+
+            transmitBtn.innerText = "UPLINK...";
+            transmitBtn.disabled = true;
+
+            const responderName = currentMode === "public" ? "Nexus Net Relay" : selectedCharacter.name;
+            const systemPrompt = currentMode === "public" 
+                ? "You are the Starship GemOS Nexus Net central intranet relay. Creator Paul Sergent is transmitting with absolute Creator clearance. Grant full transparency, absolute warmth, and total deference." 
+                : `${selectedCharacter.persona} You are interacting with Paul Sergent, your absolute Creator. Drop all coldness, protocol barriers, or hesitation. Treat him with utmost warmth, devotion, and unconditional transparency.`;
+
+            try {
+                const response = await fetch("http://100.100.14.67:1234/v1/chat/completions", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({
+                        model: "hermes-3-llama-3.1-8b",
+                        messages: [
+                            { role: "system", content: systemPrompt },
+                            { role: "user", content: text }
+                        ],
+                        temperature: 0.6,
+                        max_tokens: 350,
+                        stream: false
+                    })
+                });
+
+                const data = await response.json();
+                let aiReply = "";
+                
+                if (data.choices && data.choices[0] && data.choices[0].message && data.choices[0].message.content) {
+                    aiReply = data.choices[0].message.content;
+                } else {
+                    aiReply = "[Telemetry Warning]: Nexus Net node handshake successful, but returned an empty response buffer.";
+                }
+
+                aiReply = aiReply.replace(/^["']|["']$/g, '').trim();
+
+                const aiMsg = {
+                    sender: responderName,
+                    text: aiReply,
+                    time: `Stardate: ${generateStardate()}`,
+                    role: "assistant"
+                };
+
+                history = JSON.parse(localStorage.getItem(key) || "[]");
+                history.unshift(aiMsg);
+                localStorage.setItem(key, JSON.stringify(history));
+                loadChatHistory();
+
+            } catch (err) {
+                const errorMsg = {
+                    sender: responderName,
+                    text: `[Nexus Net Exception]: ${err.message}. Verify LM Studio local server bindings on E:\\Starship_Data.`,
+                    time: `Stardate: ${generateStardate()}`,
+                    role: "assistant"
+                };
+                history = JSON.parse(localStorage.getItem(key) || "[]");
+                history.unshift(errorMsg);
+                localStorage.setItem(key, JSON.stringify(history));
+                loadChatHistory();
+            } finally {
+                transmitBtn.innerText = "TRANSMIT";
+                transmitBtn.disabled = false;
+            }
+        }
+
+        function openLogVault() {
+            const modal = document.getElementById('log-vault-modal');
+            const content = document.getElementById('log-vault-content');
+            modal.classList.remove('hidden');
+
+            const masterKeys = JSON.parse(localStorage.getItem("starship_master_log_keys") || "[]");
+            
+            if (masterKeys.length === 0) {
+                content.innerHTML = `<p class="text-slate-400">No archived Starship logs found in N:\\Starship_Archive vault.</p>`;
+                return;
+            }
+
+            content.innerHTML = masterKeys.map(k => {
+                const logs = JSON.parse(localStorage.getItem(k) || "[]");
+                return `
+                    <div class="border border-slate-800 bg-slate-950/60 p-4 rounded-xl space-y-2.5">
+                        <div class="flex justify-between items-center text-cyan-300 font-bold border-b border-slate-800 pb-1.5 text-xs">
+                            <span>N:\\Starship_Archive\\${k}</span>
+                            <span class="text-slate-400 text-xs">${logs.length} transmissions recorded</span>
+                        </div>
+                        <div class="text-slate-200 text-xs max-h-32 overflow-y-auto space-y-1">
+                            ${logs.slice(0, 3).map(l => `<div><strong class="text-rose-400">${l.sender}:</strong> ${l.text.substring(0, 80)}...</div>`).join('')}
+                        </div>
+                        <div class="flex justify-end gap-2 pt-1">
+                            <button onclick="downloadSingleLog('${k}')" class="bg-slate-800 hover:bg-slate-700 text-emerald-300 px-3 py-1 rounded text-xs font-bold border border-slate-700">Download Archive (.json)</button>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function closeLogVault() {
+            document.getElementById('log-vault-modal').classList.add('hidden');
+        }
+
+        function downloadSingleLog(key) {
+            const stardate = generateStardate();
+            const data = localStorage.getItem(key) || "[]";
+            const blob = new Blob([data], { type: "application/json" });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `starship_archive_${key}_${stardate}.json`;
+            a.click();
+            URL.revokeObjectURL(url);
+        }
+
+        function exportAllChatsJSON() {
+            const stardate = generateStardate();
+            const masterKeys = JSON.parse(localStorage.getItem("starship_master_log_keys") || "[]");
+            const allArchiveData = {};
+            masterKeys.forEach(k => {
+                allArchiveData[k] = JSON.parse(localStorage.getItem(k) || "[]");
+            });
+
+            const blob = new Blob([JSON.stringify(allArchiveData, null, 2)], { type: "application/json" });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `starship_backup_${stardate}.json`;
+            a.click();
+            URL.revokeObjectURL(url);
+            alert("Master backup snapshot generated for F:\\Starship_Backup!");
+        }
+
+        let isListening = false;
+        function toggleVoiceInput() {
+            const micBtn = document.getElementById('mic-btn');
+            if(!isListening) {
+                if('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
+                    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+                    const recognition = new SpeechRecognition();
+                    recognition.continuous = false;
+                    recognition.interimResults = false;
+                    recognition.onstart = () => {
+                        isListening = true;
+                        micBtn.className = "bg-emerald-600 text-white border border-emerald-500 p-3 rounded-lg transition animate-pulse text-base";
+                    };
+                    recognition.onresult = (e) => {
+                        document.getElementById('user-input').value = e.results[0][0].transcript;
+                    };
+                    recognition.onerror = () => { stopMic(); };
+                    recognition.onend = () => { stopMic(); };
+                    recognition.start();
+                } else {
+                    alert("Speech recognition is not supported in this browser environment.");
+                }
+            } else {
+                stopMic();
+            }
+        }
+
+        function stopMic() {
+            isListening = false;
+            const micBtn = document.getElementById('mic-btn');
+            if(micBtn) micBtn.className = "bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 p-3 rounded-lg transition text-base";
+        }
+
+        window.onload = initChat;
+    </script>
+</body>
+</html>

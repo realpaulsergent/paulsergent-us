@@ -1,0 +1,566 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Starship GemOS // Ebook & Chapter Compiler</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap');
+        body { font-family: 'Plus Jakarta Sans', sans-serif; background-color: #050b14; color: #cbd5e1; }
+        .font-mono { font-family: 'JetBrains Mono', monospace; }
+        ::-webkit-scrollbar { width: 10px; }
+        ::-webkit-scrollbar-track { background: #030712; }
+        ::-webkit-scrollbar-thumb { background: #334155; border-radius: 5px; }
+        ::-webkit-scrollbar-thumb:hover { background: #475569; }
+    </style>
+</head>
+<body class="h-screen flex flex-col overflow-hidden selection:bg-rose-500 selection:text-white text-base">
+
+    <!-- TOP DECK CONTROL BAR -->
+    <header class="bg-[#0b1329] border-b border-[#1e293b] px-6 py-3 flex justify-between items-center shrink-0">
+        <div class="flex items-center space-x-3">
+            <span class="w-3 h-3 rounded-full bg-rose-500 animate-pulse"></span>
+            <h1 class="font-mono font-bold text-sm tracking-wider text-white">STARSHIP GEMOS // <span class="text-rose-400">EBOOK & CHAPTER COMPILER</span></h1>
+        </div>
+        <div class="flex items-center space-x-3 font-mono text-xs">
+            <button onclick="createNewEbookProject()" class="bg-[#111c38] hover:bg-[#1a294f] text-cyan-300 border border-cyan-500/30 px-3.5 py-1.5 rounded-lg transition font-bold">✨ New Ebook</button>
+            <label class="bg-[#111c38] hover:bg-[#1a294f] text-amber-300 border border-amber-500/30 px-3.5 py-1.5 rounded-lg transition font-bold cursor-pointer">
+                📂 Import (.md/.txt) <input type="file" accept=".md,.txt,.json" multiple onchange="importTextFiles(event)" class="hidden">
+            </label>
+            <button onclick="saveCurrentManuscript()" class="bg-[#111c38] hover:bg-[#1a294f] text-emerald-300 border border-emerald-500/30 px-3.5 py-1.5 rounded-lg transition font-bold">💾 Save Project</button>
+            <button onclick="exportCompleteEbook()" class="bg-rose-600 hover:bg-rose-500 text-white border border-rose-400/50 px-4 py-1.5 rounded-lg transition font-bold shadow-lg shadow-rose-900/30">📦 Export Flipbook (.html)</button>
+            <a href="starship_flipbook_module.html" class="bg-[#111c38] hover:bg-[#1a294f] text-yellow-300 border border-yellow-500/30 px-3.5 py-1.5 rounded-lg transition font-bold inline-flex items-center">⚡ Cyberpunk Flipbook Reader</a>
+        </div>
+    </header>
+
+    <!-- MAIN EBOOK WORKBENCH -->
+    <div class="flex flex-grow overflow-hidden">
+        
+        <!-- MANUSCRIPT CHAPTER STRUCTURE SIDEBAR -->
+        <aside class="w-80 bg-[#070e22] border-r border-[#1e293b] flex flex-col shrink-0 p-4 space-y-4">
+            <div class="flex justify-between items-center font-mono text-xs text-rose-400 uppercase tracking-wider font-bold">
+                <span>[📖] Manuscript Structure</span>
+                <span id="chapter-count" class="bg-[#111c38] text-slate-200 px-2 py-0.5 rounded text-xs border border-slate-800">0 Chs</span>
+            </div>
+
+            <div class="space-y-3 font-mono text-xs">
+                <div>
+                    <label class="text-slate-300 block mb-1 font-bold">Ebook Title:</label>
+                    <input type="text" id="ebook-title" value="Silent Resonance: Chrono Chronicles" oninput="saveCurrentManuscript()" class="w-full bg-[#050b14] border border-[#1e293b] rounded-lg px-3 py-2 text-xs text-white focus:outline-none focus:border-rose-500 font-bold">
+                </div>
+                <div>
+                    <label class="text-slate-300 block mb-1 font-bold">Author:</label>
+                    <input type="text" id="ebook-author" value="Paul Sergent" oninput="saveCurrentManuscript()" class="w-full bg-[#050b14] border border-[#1e293b] rounded-lg px-3 py-2 text-xs text-slate-300 focus:outline-none focus:border-rose-500">
+                </div>
+            </div>
+
+            <div class="flex-grow overflow-y-auto space-y-2 pr-1" id="chapter-list">
+                <!-- Chapters listed here -->
+            </div>
+
+            <div class="pt-3 border-t border-[#1e293b] space-y-2">
+                <button onclick="addNewChapter()" class="w-full bg-[#111c38] hover:bg-[#1a294f] text-rose-300 border border-rose-500/30 py-2 rounded-lg text-xs font-mono font-bold transition">➕ Add New Chapter</button>
+                <button onclick="clearEbookStorage()" class="w-full bg-[#050b14] hover:bg-[#0b1329] text-slate-400 py-1.5 rounded-lg text-[11px] font-mono transition border border-slate-800">🗑️ Reset Manuscript</button>
+            </div>
+        </aside>
+
+        <!-- CHAPTER EDITOR & VIEWS PANE -->
+        <main class="flex-grow flex flex-col bg-[#050b14] overflow-hidden p-6 space-y-4">
+            <div class="bg-[#0b1329]/80 border border-[#1e293b] p-4 rounded-xl flex justify-between items-center shrink-0 font-mono text-xs shadow-md">
+                <div class="flex items-center gap-3">
+                    <span class="text-slate-400 font-bold">Active Chapter:</span>
+                    <input type="text" id="active-chapter-title" oninput="updateActiveChapterTitle(this.value)" class="bg-[#050b14] border border-[#1e293b] rounded px-3 py-1 text-rose-300 font-bold text-xs w-64 focus:outline-none focus:border-rose-500">
+                </div>
+                <div class="flex items-center gap-4">
+                    <div class="bg-[#050b14] border border-[#1e293b] rounded-lg p-1 flex items-center gap-1">
+                        <span class="text-[10px] text-slate-400 px-2 font-bold">VIEW:</span>
+                        <button onclick="setEditorViewMode('html')" id="btn-view-html" class="px-2.5 py-1 rounded text-xs font-bold transition bg-rose-600 text-white shadow">HTML Rich</button>
+                        <button onclick="setEditorViewMode('md')" id="btn-view-md" class="px-2.5 py-1 rounded text-xs font-bold transition text-slate-300 hover:text-white">MD View</button>
+                        <button onclick="setEditorViewMode('online')" id="btn-view-online" class="px-2.5 py-1 rounded text-xs font-bold transition text-slate-300 hover:text-white">Online Plain</button>
+                    </div>
+                    <div class="flex items-center gap-3">
+                        <label class="text-cyan-400 cursor-pointer font-bold hover:underline">
+                            🖼️ Attach Image <input type="file" accept="image/*" onchange="attachChapterMedia(event, 'image')" class="hidden">
+                        </label>
+                        <span class="text-slate-600">|</span>
+                        <label class="text-emerald-400 cursor-pointer font-bold hover:underline">
+                            🔊 Attach Audio (.mp3) <input type="file" accept="audio/*" onchange="attachChapterMedia(event, 'audio')" class="hidden">
+                        </label>
+                    </div>
+                </div>
+            </div>
+
+            <!-- JOPLIN-STYLE FORMATTING RIBBON -->
+            <div class="bg-[#0b1329] border border-[#1e293b] px-3 py-1.5 rounded-xl flex items-center gap-1.5 shrink-0 shadow-sm text-xs font-mono">
+                <button onclick="insertMarkdownTag('**', '**')" class="bg-[#111c38] hover:bg-[#1a294f] text-slate-200 px-2.5 py-1 rounded border border-slate-800 font-bold" title="Bold"><b>B</b></button>
+                <button onclick="insertMarkdownTag('*', '*')" class="bg-[#111c38] hover:bg-[#1a294f] text-slate-200 px-2.5 py-1 rounded border border-slate-800 italic" title="Italic"><i>I</i></button>
+                <span class="text-slate-700">|</span>
+                <button onclick="insertMarkdownTag('# ', '')" class="bg-[#111c38] hover:bg-[#1a294f] text-cyan-300 px-2.5 py-1 rounded border border-slate-800 font-bold" title="Header 1">H1</button>
+                <button onclick="insertMarkdownTag('## ', '')" class="bg-[#111c38] hover:bg-[#1a294f] text-cyan-300 px-2.5 py-1 rounded border border-slate-800 font-bold" title="Header 2">H2</button>
+                <button onclick="insertMarkdownTag('### ', '')" class="bg-[#111c38] hover:bg-[#1a294f] text-cyan-300 px-2.5 py-1 rounded border border-slate-800 font-bold" title="Header 3">H3</button>
+                <span class="text-slate-700">|</span>
+                <button onclick="insertMarkdownTag('- ', '')" class="bg-[#111c38] hover:bg-[#1a294f] text-slate-200 px-2.5 py-1 rounded border border-slate-800" title="Bullet List">• List</button>
+                <button onclick="insertMarkdownTag('> ', '')" class="bg-[#111c38] hover:bg-[#1a294f] text-slate-200 px-2.5 py-1 rounded border border-slate-800" title="Quote">❝ Quote</button>
+                <button onclick="insertMarkdownTag('`', '`')" class="bg-[#111c38] hover:bg-[#1a294f] text-amber-300 px-2.5 py-1 rounded border border-slate-800 font-mono" title="Code">&lt;/&gt;</button>
+                <span class="text-slate-700">|</span>
+                <span class="text-emerald-400 font-mono text-[11px] ml-auto">⚡ Auto-Saved to Local Storage</span>
+            </div>
+
+            <!-- EDITOR & LIVE VIEW SWITCHER -->
+            <div class="flex-grow flex flex-col relative overflow-hidden">
+                <textarea id="active-chapter-content" oninput="updateActiveChapterContent(this.value)" placeholder="Write your chapter or paste imported Markdown/Text here..." class="flex-grow bg-[#070e22]/50 border border-[#1e293b] rounded-xl p-5 text-base text-slate-300 font-sans leading-relaxed focus:outline-none focus:border-rose-500 resize-none shadow-inner"></textarea>
+                <div id="preview-container" class="absolute inset-0 bg-[#070e22] border border-[#1e293b] rounded-xl p-6 overflow-y-auto hidden font-sans text-base text-slate-300 leading-relaxed space-y-4 shadow-xl"></div>
+            </div>
+
+            <!-- MEDIA PREVIEW BAR -->
+            <div id="media-preview-bar" class="bg-[#0b1329] border border-[#1e293b] px-4 py-3 rounded-xl flex flex-col gap-2.5 text-xs font-mono shrink-0 hidden shadow-md">
+                <div class="text-rose-400 font-bold flex justify-between items-center">
+                    <span>[Attached Chapter Media Stored Locally in Project Array]</span>
+                    <button onclick="removeChapterMedia()" class="text-rose-400 hover:text-rose-300 text-[11px] underline">Remove Media</button>
+                </div>
+                <div id="media-items-display" class="flex flex-wrap gap-4 items-center"></div>
+            </div>
+        </main>
+    </div>
+
+    <!-- LIGHTBOX / MAXIMIZE IMAGE MODAL -->
+    <div id="lightbox-modal" class="fixed inset-0 bg-black/90 z-50 flex flex-col items-center justify-center p-6 hidden">
+        <button onclick="closeLightbox()" class="absolute top-6 right-6 bg-rose-600 hover:bg-rose-500 text-white font-mono px-4 py-2 rounded-lg font-bold shadow-lg">✕ Return to Story</button>
+        <img id="lightbox-img" src="" class="max-h-[85vh] max-w-[90vw] object-contain rounded-xl border border-slate-700 shadow-2xl">
+    </div>
+
+    <!-- SCRIPT LOGIC FOR EBOOK MODULE -->
+    <script>
+        var ebookProject = JSON.parse(localStorage.getItem("starship_ebook_project") || JSON.stringify({
+            title: "Silent Resonance: Chrono Chronicles",
+            author: "Paul Sergent",
+            chapters: [
+                { id: 1, title: "Chapter 1: The Nexus Relay", content: "# Chapter 1: The Nexus Relay\n\n**Stardate: 260809**\n\nCaptain Elana Vance reviewed incoming telemetry from the bridge console.", image: null, imageName: null, audio: null, audioName: null },
+                { id: 2, title: "Chapter 2: Systems Diagnostics", content: "# Chapter 2: Systems Core Diagnostics\n\n**Stardate: 260809**\n\nChief Systems Architect Michael Smith verified local server bindings.", image: null, imageName: null, audio: null, audioName: null }
+            ]
+        }));
+
+        var activeChapterId = ebookProject.chapters[0] ? ebookProject.chapters[0].id : 1;
+        var currentViewMode = "html";
+
+        function initEbook() {
+            document.getElementById('ebook-title').value = ebookProject.title || "";
+            document.getElementById('ebook-author').value = ebookProject.author || "";
+            renderChapterList();
+            loadActiveChapter();
+        }
+
+        function createNewEbookProject() {
+            if(!confirm("Create a new Ebook? This will start a fresh project.")) return;
+            var newTitle = prompt("Enter new Ebook Title:", "New Starship Chronicle");
+            if (!newTitle) return;
+            var newAuthor = prompt("Enter Author Name:", "Paul Sergent");
+            
+            ebookProject = {
+                title: newTitle,
+                author: newAuthor || "Paul Sergent",
+                chapters: [
+                    { id: Date.now(), title: "Chapter 1: Introduction", content: "# Chapter 1\n\nBegin writing your new ebook or import notes here...", image: null, imageName: null, audio: null, audioName: null }
+                ]
+            };
+            activeChapterId = ebookProject.chapters[0].id;
+            saveCurrentManuscript();
+            initEbook();
+            alert("New Ebook project created successfully!");
+        }
+
+        function saveCurrentManuscript() {
+            ebookProject.title = document.getElementById('ebook-title').value;
+            ebookProject.author = document.getElementById('ebook-author').value;
+            localStorage.setItem("starship_ebook_project", JSON.stringify(ebookProject));
+        }
+
+        function setEditorViewMode(mode) {
+            currentViewMode = mode;
+            var modes = ['html', 'md', 'online'];
+            for(var i = 0; i < modes.length; i++) {
+                var btn = document.getElementById('btn-view-' + modes[i]);
+                if(modes[i] === mode) {
+                    btn.className = "px-2.5 py-1 rounded text-xs font-bold transition bg-rose-600 text-white shadow";
+                } else {
+                    btn.className = "px-2.5 py-1 rounded text-xs font-bold transition text-slate-300 hover:text-white";
+                }
+            }
+            loadActiveChapter();
+        }
+
+        function renderChapterList() {
+            var list = document.getElementById('chapter-list');
+            document.getElementById('chapter-count').innerText = ebookProject.chapters.length + " Chs";
+
+            var html = "";
+            for(var i = 0; i < ebookProject.chapters.length; i++) {
+                var ch = ebookProject.chapters[i];
+                var activeClass = (ch.id === activeChapterId) ? "bg-rose-500/15 border-rose-500/50 text-white shadow" : "bg-[#050b14] border-[#1e293b] text-slate-300 hover:bg-[#0b1329]";
+                html += '<div onclick="selectChapter(' + ch.id + ')" class="p-3 rounded-xl cursor-pointer transition border flex justify-between items-center ' + activeClass + '">';
+                html += '<span class="font-bold truncate text-xs">' + ch.title + '</span>';
+                html += '<button onclick="event.stopPropagation(); deleteChapter(' + ch.id + ')" class="text-slate-500 hover:text-rose-400 text-xs px-1">✕</button>';
+                html += '</div>';
+            }
+            list.innerHTML = html;
+        }
+
+        function selectChapter(id) {
+            activeChapterId = id;
+            renderChapterList();
+            loadActiveChapter();
+        }
+
+        function loadActiveChapter() {
+            var ch = null;
+            for(var i = 0; i < ebookProject.chapters.length; i++) {
+                if(ebookProject.chapters[i].id === activeChapterId) {
+                    ch = ebookProject.chapters[i];
+                    break;
+                }
+            }
+            if (!ch) return;
+            document.getElementById('active-chapter-title').value = ch.title;
+            
+            var textarea = document.getElementById('active-chapter-content');
+            var preview = document.getElementById('preview-container');
+            textarea.value = ch.content;
+
+            if(currentViewMode === 'html') {
+                textarea.style.display = 'block';
+                preview.style.display = 'none';
+            } else if(currentViewMode === 'md') {
+                textarea.style.display = 'none';
+                preview.style.display = 'block';
+                preview.className = "absolute inset-0 bg-[#070e22] border border-rose-500/30 rounded-xl p-6 overflow-y-auto font-mono text-sm text-rose-200 whitespace-pre-wrap leading-relaxed space-y-2";
+                preview.innerText = "=== [MARKDOWN SOURCE VIEW] ===\n\n" + ch.content;
+            } else if(currentViewMode === 'online') {
+                textarea.style.display = 'none';
+                preview.style.display = 'block';
+                preview.className = "absolute inset-0 bg-[#070e22] border border-[#1e293b] rounded-xl p-6 overflow-y-auto font-sans text-base text-slate-300 whitespace-pre-wrap leading-normal space-y-2";
+                preview.innerText = ch.content;
+            }
+
+            var mediaBar = document.getElementById('media-preview-bar');
+            var mediaItemsDisplay = document.getElementById('media-items-display');
+            
+            if (ch.image || ch.audio) {
+                mediaBar.classList.remove('hidden');
+                var mediaHtml = "";
+                if(ch.image) {
+                    mediaHtml += '<div class="flex items-center gap-3 bg-[#050b14] px-3 py-2 rounded-lg border border-slate-800"><span class="text-cyan-300 font-mono text-xs">🖼️ ' + (ch.imageName || 'Image Attached') + '</span><img src="' + ch.image + '" onclick="openLightbox(\'' + ch.image + '\')" class="h-10 w-16 object-cover rounded border border-slate-700 cursor-pointer hover:border-rose-500 transition" title="Click to maximize"></div>';
+                }
+                if(ch.audio) {
+                    mediaHtml += '<div class="flex items-center gap-3 bg-[#050b14] px-3 py-2 rounded-lg border border-slate-800"><span class="text-emerald-300 font-mono text-xs">🔊 ' + (ch.audioName || 'Audio Attached') + '</span><audio controls class="h-8 w-48"><source src="' + ch.audio + '" type="audio/mpeg"></audio></div>';
+                }
+                mediaItemsDisplay.innerHTML = mediaHtml;
+            } else {
+                mediaBar.classList.add('hidden');
+                mediaItemsDisplay.innerHTML = "";
+            }
+        }
+
+        function openLightbox(imgSrc) {
+            document.getElementById('lightbox-img').src = imgSrc;
+            document.getElementById('lightbox-modal').classList.remove('hidden');
+        }
+
+        function closeLightbox() {
+            document.getElementById('lightbox-modal').classList.add('hidden');
+        }
+
+        function insertMarkdownTag(prefix, suffix) {
+            var textarea = document.getElementById('active-chapter-content');
+            var start = textarea.selectionStart;
+            var end = textarea.selectionEnd;
+            var text = textarea.value;
+            var selectedText = text.substring(start, end);
+            
+            textarea.value = text.substring(0, start) + prefix + selectedText + suffix + text.substring(end);
+            textarea.selectionStart = start + prefix.length;
+            textarea.selectionEnd = end + prefix.length;
+            textarea.focus();
+            updateActiveChapterContent(textarea.value);
+        }
+
+        function updateActiveChapterTitle(val) {
+            for(var i = 0; i < ebookProject.chapters.length; i++) {
+                if(ebookProject.chapters[i].id === activeChapterId) {
+                    ebookProject.chapters[i].title = val;
+                    break;
+                }
+            }
+            renderChapterList();
+            saveCurrentManuscript();
+        }
+
+        function updateActiveChapterContent(val) {
+            for(var i = 0; i < ebookProject.chapters.length; i++) {
+                if(ebookProject.chapters[i].id === activeChapterId) {
+                    ebookProject.chapters[i].content = val;
+                    break;
+                }
+            }
+            saveCurrentManuscript();
+        }
+
+        function addNewChapter() {
+            var newId = Date.now();
+            ebookProject.chapters.push({
+                id: newId,
+                title: "Chapter " + (ebookProject.chapters.length + 1) + ": New Transmission",
+                content: "# Chapter " + (ebookProject.chapters.length + 1) + "\n\nWrite chapter content here...",
+                image: null,
+                imageName: null,
+                audio: null,
+                audioName: null
+            });
+            saveCurrentManuscript();
+            selectChapter(newId);
+        }
+
+        function deleteChapter(id) {
+            if (ebookProject.chapters.length <= 1) {
+                alert("Manuscript must contain at least one chapter.");
+                return;
+            }
+            var filtered = [];
+            for(var i = 0; i < ebookProject.chapters.length; i++) {
+                if(ebookProject.chapters[i].id !== id) {
+                    filtered.push(ebookProject.chapters[i]);
+                }
+            }
+            ebookProject.chapters = filtered;
+            activeChapterId = ebookProject.chapters[0].id;
+            saveCurrentManuscript();
+            initEbook();
+        }
+
+        function attachChapterMedia(event, type) {
+            var file = event.target.files[0];
+            if (!file) return;
+            var reader = new FileReader();
+            reader.onload = function(e) {
+                for(var i = 0; i < ebookProject.chapters.length; i++) {
+                    if(ebookProject.chapters[i].id === activeChapterId) {
+                        if(type === 'image') {
+                            ebookProject.chapters[i].image = e.target.result;
+                            ebookProject.chapters[i].imageName = file.name;
+                        } else if(type === 'audio') {
+                            ebookProject.chapters[i].audio = e.target.result;
+                            ebookProject.chapters[i].audioName = file.name;
+                        }
+                        break;
+                    }
+                }
+                saveCurrentManuscript();
+                loadActiveChapter();
+                alert("Successfully attached " + type + " (" + file.name + ") to active chapter!");
+            };
+            reader.readAsDataURL(file);
+        }
+
+        function removeChapterMedia() {
+            if(confirm("Remove all attached media from this chapter?")) {
+                for(var i = 0; i < ebookProject.chapters.length; i++) {
+                    if(ebookProject.chapters[i].id === activeChapterId) {
+                        ebookProject.chapters[i].image = null;
+                        ebookProject.chapters[i].imageName = null;
+                        ebookProject.chapters[i].audio = null;
+                        ebookProject.chapters[i].audioName = null;
+                        break;
+                    }
+                }
+                saveCurrentManuscript();
+                loadActiveChapter();
+            }
+        }
+
+        function importTextFiles(event) {
+            var files = event.target.files;
+            if (!files.length) return;
+
+            for (var i = 0; i < files.length; i++) {
+                (function(file) {
+                    var reader = new FileReader();
+                    reader.onload = function(e) {
+                        var text = e.target.result;
+                        var lines = text.split('\n');
+                        var title = lines[0].replace(/^[#\s]+/, '') || "Imported Note " + Date.now();
+                        
+                        ebookProject.chapters.push({
+                            id: Date.now() + Math.random(),
+                            title: title,
+                            content: text,
+                            image: null,
+                            imageName: null,
+                            audio: null,
+                            audioName: null
+                        });
+                        saveCurrentManuscript();
+                        initEbook();
+                    };
+                    reader.readAsText(file);
+                })(files[i]);
+            }
+            alert("Successfully imported external text/Markdown files as new chapters!");
+        }
+
+        function exportCompleteEbook() {
+            saveCurrentManuscript();
+            var title = ebookProject.title;
+            var author = ebookProject.author;
+
+            var htmlDoc = document.implementation.createHTMLDocument(title);
+            var styleEl = htmlDoc.createElement('style');
+            styleEl.textContent = "body { background-color: #030008; color: #cbd5e1; font-family: 'Plus Jakarta Sans', sans-serif; padding: 3rem; max-width: 55rem; margin: auto; font-size: 1.125rem; line-height: 1.8; position: relative; } header { border-bottom: 1px solid rgba(217,70,239,0.3); padding-bottom: 1.5rem; margin-bottom: 3rem; display: flex; justify-content: space-between; align-items: center; } h1 { font-size: 2.25rem; color: #facc15; font-weight: bold; } section { margin-bottom: 3.5rem; border-bottom: 1px solid rgba(217,70,239,0.2); padding-bottom: 2.5rem; position: relative; } h2 { color: #06b6d4; font-size: 1.35rem; font-family: monospace; margin-bottom: 1.25rem; } .media-box { float: right; width: 16rem; margin-left: 2rem; margin-bottom: 1rem; background: #0c041a; border: 1px solid rgba(217,70,239,0.4); padding: 0.75rem; border-radius: 0.75rem; text-align: center; } img { width: 100%; height: 11rem; object-fit: cover; border-radius: 0.5rem; cursor: pointer; border: 1px solid #334155; } img:hover { border-color: #d946ef; } .audio-controls { display: flex; gap: 0.5rem; margin-top: 0.5rem; justify-content: center; } .audio-btn { background: #180830; color: #06b6d4; border: 1px solid rgba(6,182,212,0.4); padding: 0.25rem 0.75rem; border-radius: 0.35rem; font-family: monospace; font-size: 0.85rem; cursor: pointer; font-weight: bold; } .audio-btn:hover { background: #240c4a; color: #d946ef; } .modal { display:none; position:fixed; z-index:100; left:0; top:0; width:100%; height:100%; background-color:rgba(0,0,0,0.95); align-items:center; justify-content:center; flex-direction:column; } .modal img { max-height:85vh; max-width:90vw; width:auto; height:auto; object-fit:contain; border-radius:0.75rem; border: 1px solid #d946ef; } .modal-btn { background:#d946ef; color:white; border:none; padding:0.5rem 1rem; font-family:monospace; font-weight:bold; border-radius:0.5rem; cursor:pointer; margin-bottom:1rem; } .bookmark-banner { background: #0c041a; border: 1px solid #facc15; padding: 0.75rem 1rem; border-radius: 0.75rem; margin-bottom: 2rem; display: flex; justify-content: space-between; align-items: center; font-family: monospace; font-size: 0.9rem; color: #facc15; } .watermark-container { position: fixed; bottom: 15px; right: 20px; z-index: 999; background: rgba(12, 4, 26, 0.9); border: 1px solid rgba(217,70,239,0.5); padding: 8px 14px; border-radius: 8px; font-family: monospace; font-size: 0.75rem; color: #e2e8f0; display: flex; align-items: center; gap: 8px; backdrop-filter: blur(5px); box-shadow: 0 0 15px rgba(217,70,239,0.25); } .watermark-logo { width: 22px; height: 22px; border-radius: 50%; object-fit: cover; border: 1px solid #06b6d4; }";
+            htmlDoc.head.appendChild(styleEl);
+
+            var header = htmlDoc.createElement('header');
+            var titleDiv = htmlDoc.createElement('div');
+            var h1 = htmlDoc.createElement('h1');
+            h1.textContent = title;
+            var p = htmlDoc.createElement('p');
+            p.style.color = "#06b6d4";
+            p.style.fontFamily = "monospace";
+            p.textContent = "Written by " + author;
+            titleDiv.appendChild(h1);
+            titleDiv.appendChild(p);
+            header.appendChild(titleDiv);
+
+            var bookmarkHeaderBtn = htmlDoc.createElement('button');
+            bookmarkHeaderBtn.className = 'audio-btn';
+            bookmarkHeaderBtn.style.background = '#d946ef';
+            bookmarkHeaderBtn.style.color = 'white';
+            bookmarkHeaderBtn.textContent = '📌 Save Bookmark';
+            bookmarkHeaderBtn.onclick = function() {
+                var currentScroll = window.scrollY;
+                localStorage.setItem('ebook_bookmark_' + title, currentScroll);
+                alert("Bookmark saved successfully at current reading position!");
+            };
+            header.appendChild(bookmarkHeaderBtn);
+            htmlDoc.body.appendChild(header);
+
+            var savedPos = localStorage.getItem('ebook_bookmark_' + title);
+            if (savedPos) {
+                var banner = htmlDoc.createElement('div');
+                banner.className = 'bookmark-banner';
+                banner.innerHTML = '<span>📌 Saved Bookmark Found! Resume where you left off.</span>';
+                var jumpBtn = htmlDoc.createElement('button');
+                jumpBtn.className = 'audio-btn';
+                jumpBtn.style.background = '#facc15';
+                jumpBtn.style.color = 'black';
+                jumpBtn.textContent = 'Jump to Bookmark';
+                jumpBtn.onclick = function() { window.scrollTo({ top: parseInt(savedPos), behavior: 'smooth' }); };
+                banner.appendChild(jumpBtn);
+                htmlDoc.body.appendChild(banner);
+            }
+
+            var modal = htmlDoc.createElement('div');
+            modal.className = 'modal';
+            modal.id = 'reader-modal';
+            var closeBtn = htmlDoc.createElement('button');
+            closeBtn.className = 'modal-btn';
+            closeBtn.textContent = '✕ Return to Story';
+            closeBtn.onclick = function() { modal.style.display = 'none'; };
+            var modalImg = htmlDoc.createElement('img');
+            modalImg.id = 'modal-img-tag';
+            modal.appendChild(closeBtn);
+            modal.appendChild(modalImg);
+            htmlDoc.body.identity ? null : htmlDoc.body.appendChild(modal);
+
+            for(var i = 0; i < ebookProject.chapters.length; i++) {
+                var ch = ebookProject.chapters[i];
+                var section = htmlDoc.createElement('section');
+                
+                if (ch.image || ch.audio) {
+                    var mediaBox = htmlDoc.createElement('div');
+                    mediaBox.className = 'media-box';
+                    if (ch.image) {
+                        var img = htmlDoc.createElement('img');
+                        img.src = ch.image;
+                        img.title = "Click to maximize";
+                        img.onclick = (function(src) {
+                            return function() {
+                                modalImg.src = src;
+                                modal.style.display = 'flex';
+                            };
+                        })(ch.image);
+                        mediaBox.appendChild(img);
+                    }
+                    if (ch.audio) {
+                        var audioElement = htmlDoc.createElement('audio');
+                        var source = htmlDoc.createElement('source');
+                        source.src = ch.audio;
+                        source.type = 'audio/mpeg';
+                        audioElement.appendChild(source);
+                        mediaBox.appendChild(audioElement);
+
+                        var audioControls = htmlDoc.createElement('div');
+                        audioControls.className = 'audio-controls';
+                        
+                        var playBtn = htmlDoc.createElement('button');
+                        playBtn.className = 'audio-btn';
+                        playBtn.textContent = '▶ Play';
+                        playBtn.onclick = (function(aud) { return function() { aud.play(); }; })(audioElement);
+
+                        var pauseBtn = htmlDoc.createElement('button');
+                        pauseBtn.className = 'audio-btn';
+                        pauseBtn.textContent = '⏸ Pause';
+                        pauseBtn.onclick = (function(aud) { return function() { aud.pause(); }; })(audioElement);
+
+                        var stopBtn = htmlDoc.createElement('button');
+                        stopBtn.className = 'audio-btn';
+                        stopBtn.textContent = '⏹ Stop';
+                        stopBtn.onclick = (function(aud) { return function() { aud.pause(); aud.currentTime = 0; }; })(audioElement);
+
+                        audioControls.appendChild(playBtn);
+                        audioControls.appendChild(pauseBtn);
+                        audioControls.appendChild(stopBtn);
+                        mediaBox.appendChild(audioControls);
+                    }
+                    section.appendChild(mediaBox);
+                }
+
+                var h2 = htmlDoc.createElement('h2');
+                h2.textContent = ch.title;
+                section.appendChild(h2);
+
+                var contentDiv = htmlDoc.createElement('div');
+                contentDiv.style.whiteSpace = "pre-wrap";
+                contentDiv.textContent = ch.content;
+                section.appendChild(contentDiv);
+
+                htmlDoc.body.appendChild(section);
+            }
+
+            var watermark = htmlDoc.createElement('div');
+            watermark.className = 'watermark-container';
+            watermark.innerHTML = '<span>Author: Paul A. Sergent | Project Starship | All Rights Reserved &copy; 2026</span>';
+            htmlDoc.body.appendChild(watermark);
+
+            var serializer = new XMLSerializer();
+            var finalHtml = "<!DOCTYPE html>\n" + serializer.serializeToString(htmlDoc);
+
+            var blob = new Blob([finalHtml], { type: "text/html;charset=utf-8" >> 0 ? "text/html;charset=utf-8" : "text/html" });
+            var url = URL.createObjectURL(blob);
+            var a = document.createElement('a');
+            a.href = url;
+            a.download = title.toLowerCase().replace(/[^a-z0-9]/g, '_') + "_cyberpunk_flipbook.html";
+            a.click();
+            URL.revokeObjectURL(url);
+            alert("Cyberpunk Flipbook package compiled and exported successfully!");
+        }
+
+        function clearEbookStorage() {
+            if (confirm("Reset manuscript project?")) {
+                localStorage.removeItem("starship_ebook_project");
+                location.reload();
+            }
+        }
+
+        window.onload = initEbook;
+    </script>
+</body>
+</html>
