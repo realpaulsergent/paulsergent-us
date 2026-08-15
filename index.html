@@ -1,51 +1,169 @@
-<!-- Ecosystem Dynamic Cards Module -->
-<style>
-  .eco-card-container { 
-    display: flex; 
-    flex-direction: column; 
-    gap: 16px; 
-    max-width: 600px; 
-    margin: 20px 0; 
-  }
-  .eco-card { 
-    background: linear-gradient(145deg, #0d1117 0%, #161b22 100%); 
-    border: 1px solid #30363d; 
-    border-radius: 8px; 
-    padding: 20px; 
-    position: relative; 
-  }
-  .eco-card::before { 
-    content: ''; 
-    position: absolute; 
-    top: 0; left: 0; width: 3px; height: 100%; 
-    background: #ff3366; 
-  }
-  .eco-card-meta { 
-    font-size: 0.75rem; 
-    color: #8b949e; 
-    font-family: monospace; 
-    text-transform: uppercase; 
-    margin-bottom: 8px; 
-  }
-  .eco-card-title { 
-    color: #ffffff; 
-    font-size: 1.1rem; 
-    font-weight: 600; 
-    text-decoration: none; 
-    display: block; 
-  }
-  .eco-card-title:hover {
-    color: #ff3366;
-  }
-</style>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Paul Sergent | Sovereign Node</title>
+  <style>
+    :root {
+      --bg-base: #05070b;
+      --bg-surface: #0d1117;
+      --bg-surface-hover: #161b22;
+      --border-color: #30363d;
+      --text-main: #c9d1d9;
+      --text-muted: #8b949e;
+      --accent-pink: #ff3366;
+    }
 
-<div class="eco-card-container">
-  <div class="eco-card">
-    <div class="eco-card-meta">// MODULE // ID: 01</div>
-    <a href="/chat" class="eco-card-title">Starship Chat Hub</a>
+    body {
+      background-color: var(--bg-base);
+      color: var(--text-main);
+      font-family: system-ui, -apple-system, sans-serif;
+      margin: 0;
+      padding: 40px 20px;
+    }
+
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+
+    /* Top Navigation bar */
+    .top-bar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 0.85rem;
+      font-family: monospace;
+      color: var(--text-muted);
+      margin-bottom: 60px;
+      border-bottom: 1px solid var(--border-color);
+      padding-bottom: 15px;
+    }
+
+    .badge {
+      border: 1px solid var(--border-color);
+      padding: 4px 10px;
+      border-radius: 20px;
+      color: var(--accent-pink);
+    }
+
+    /* Hero & Content Layout */
+    .hero-layout {
+      display: grid;
+      grid-template-columns: 1fr 400px;
+      gap: 40px;
+      align-items: start;
+    }
+
+    h1 {
+      font-size: 3rem;
+      line-height: 1.1;
+      color: #ffffff;
+      margin-bottom: 20px;
+    }
+
+    h1 span {
+      color: var(--accent-pink);
+    }
+
+    p {
+      color: var(--text-muted);
+      font-size: 1.05rem;
+      line-height: 1.6;
+      margin-bottom: 30px;
+    }
+
+    /* Sci-Fi Card Layout Integration */
+    .eco-card-container { 
+      display: flex; 
+      flex-direction: column; 
+      gap: 16px; 
+      margin-top: 30px; 
+    }
+    
+    .eco-card { 
+      background: linear-gradient(145deg, var(--bg-surface) 0%, var(--bg-surface-hover) 100%); 
+      border: 1px solid var(--border-color); 
+      border-radius: 8px; 
+      padding: 20px; 
+      position: relative; 
+      transition: border-color 0.2s;
+    }
+    
+    .eco-card::before { 
+      content: ''; 
+      position: absolute; 
+      top: 0; left: 0; width: 3px; height: 100%; 
+      background: var(--accent-pink); 
+    }
+    
+    .eco-card-meta { 
+      font-size: 0.75rem; 
+      color: var(--text-muted); 
+      font-family: monospace; 
+      text-transform: uppercase; 
+      margin-bottom: 8px; 
+    }
+    
+    .eco-card-title { 
+      color: #ffffff; 
+      font-size: 1.1rem; 
+      font-weight: 600; 
+      text-decoration: none; 
+      display: block; 
+    }
+    
+    .eco-card-title:hover {
+      color: var(--accent-pink);
+    }
+
+    /* Right column box matching your theme */
+    .side-panel {
+      background: var(--bg-surface);
+      border: 1px solid var(--border-color);
+      border-radius: 12px;
+      padding: 30px;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="container">
+    <!-- Top Header Bar -->
+    <div class="top-bar">
+      <div class="badge">Anti-Censorship Fallback</div>
+      <div>Sovereign Node // Direct-to-Reader Architecture</div>
+    </div>
+
+    <!-- Main Content Section -->
+    <div class="hero-layout">
+      <div>
+        <h1>Failed Social Media Connections! <span>Stay Online.</span></h1>
+        <p>Algorithms dictate what you see. Accounts face sudden bans, restrictions, or algorithmic shadowbans. Having worn the uniform for 20 years to protect fundamental freedoms, I believe in absolute sovereignty. This digital hub serves as our direct line—no corporate tracking, no content filtering.</p>
+
+        <!-- Integrated Sci-Fi Card Layout for your nodes -->
+        <h3 style="color: #fff; font-family: monospace; margin-top: 40px; font-size: 0.9rem; text-transform: uppercase;">// System Modules & Nodes</h3>
+        <div class="eco-card-container">
+          <div class="eco-card">
+            <div class="eco-card-meta">// MODULE // ID: 01</div>
+            <a href="/chat" class="eco-card-title">Starship Chat Hub</a>
+          </div>
+          <div class="eco-card">
+            <div class="eco-card-meta">// MODULE // ID: 02</div>
+            <a href="/flipbook/index" class="eco-card-title">Silent Resonance Cyberpunk Flipbook</a>
+          </div>
+        </div>
+      </div>
+
+      <!-- Right Side Showcase Panel -->
+      <div class="side-panel">
+        <div style="font-family: monospace; font-size: 0.75rem; color: var(--accent-pink); margin-bottom: 10px;">// NEXT LAUNCH</div>
+        <h3 style="color: #fff; margin-top: 0; font-size: 1.25rem;">Silent Resonance & Chrono Series</h3>
+        <p style="font-size: 0.9rem; margin-bottom: 0;">Immersive tales detailing complex mechanics, time travel, and star systems crafted for direct reader engagement.</p>
+      </div>
+    </div>
   </div>
-  <div class="eco-card">
-    <div class="eco-card-meta">// MODULE // ID: 02</div>
-    <a href="/flipbook/index" class="eco-card-title">Silent Resonance Cyberpunk Flipbook</a>
-  </div>
-</div>
+
+</body>
+</html>
