@@ -51,6 +51,68 @@
           transform: translateY(0);
         }
       }
+
+      /* Compact Starship / UFO Ecosystem Hub */
+      .compact-starship-bridge {
+          position: relative;
+          width: 220px; 
+          height: 220px;
+          margin: 0 auto;
+          border: 1px dashed rgba(0, 255, 204, 0.3);
+          border-radius: 50%;
+          background: radial-gradient(circle, rgba(15, 23, 42, 0.8) 0%, rgba(3, 7, 18, 0.95) 80%);
+          box-shadow: 0 0 20px rgba(0, 255, 204, 0.1), inset 0 0 15px rgba(0, 255, 204, 0.05);
+          display: flex;
+          align-items: center;
+          justify-content: center;
+      }
+      .compact-starship-core {
+          width: 75px;
+          height: 75px;
+          background: #0f172a;
+          border: 2px solid #f43f5e; /* Matched to Tailwind rose-500 */
+          border-radius: 50%;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          box-shadow: 0 0 15px rgba(244, 63, 94, 0.3);
+          z-index: 2;
+          transition: transform 0.3s ease;
+      }
+      .compact-starship-core:hover {
+          transform: scale(1.05);
+      }
+      .compact-starship-core a {
+          color: #ffffff;
+          text-decoration: none;
+          font-weight: bold;
+          font-size: 13px;
+          text-transform: uppercase;
+          letter-spacing: 1px;
+      }
+      .compact-orbit-link {
+          position: absolute;
+          background: #0f172a;
+          border: 1px solid #00ffcc;
+          color: #00ffcc;
+          padding: 6px 12px;
+          border-radius: 6px;
+          font-size: 11px;
+          font-weight: bold;
+          text-decoration: none;
+          box-shadow: 0 0 8px rgba(0, 255, 204, 0.15);
+          transition: all 0.2s ease;
+          z-index: 3;
+      }
+      .compact-orbit-link:hover {
+          background: #00ffcc;
+          color: #0f172a;
+          box-shadow: 0 0 12px rgba(0, 255, 204, 0.5);
+      }
+      .compact-orbit-book { top: -12px; left: 50%; transform: translateX(-50%); }
+      .compact-orbit-shorts { bottom: -12px; left: 50%; transform: translateX(-50%); }
+      .compact-orbit-blog { top: 50%; left: -25px; transform: translateY(-50%); }
+      .compact-orbit-read { top: 50%; right: -25px; transform: translateY(-50%); }
     </style>
   </head>
   <body
@@ -235,7 +297,7 @@
     </main>
 
     <!-- Bottom Content Tracks Grid -->
-    <section class="max-w-7xl mx-auto px-6 w-full pb-16">
+    <section class="max-w-7xl mx-auto px-6 w-full pb-10">
       <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
         <!-- Track 01 -->
         <div
@@ -285,6 +347,25 @@
             publishing links.
           </p>
         </div>
+      </div>
+    </section>
+
+    <!-- Ecosystem Navigator Hub -->
+    <section class="max-w-7xl mx-auto px-6 w-full pb-16 flex flex-col items-center">
+      <div class="text-center mb-10">
+        <h3 class="text-lg font-bold text-white font-display">Network Navigator</h3>
+        <p class="text-xs text-slate-400 mt-2 font-mono">Access the extended sovereign ecosystem.</p>
+      </div>
+      
+      <div class="compact-starship-bridge">
+          <a href="https://paulsergentwrites.com" class="compact-orbit-link compact-orbit-book">Book</a>
+          <a href="https://sergentwritings.com" class="compact-orbit-link compact-orbit-shorts">Shorts</a>
+          <a href="https://paulsergentblog.com" class="compact-orbit-link compact-orbit-blog">Blog</a>
+          <a href="https://readmystuff.com" class="compact-orbit-link compact-orbit-read">Read</a>
+          
+          <div class="compact-starship-core">
+              <a href="https://paulsergent.com">Hub</a> 
+          </div>
       </div>
     </section>
 
