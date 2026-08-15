@@ -15,12 +15,16 @@
       --accent-pink: #ff3366;
     }
 
+    * {
+      box-sizing: border-box;
+    }
+
     body {
       background-color: var(--bg-base);
       color: var(--text-main);
       font-family: system-ui, -apple-system, sans-serif;
       margin: 0;
-      padding: 40px 20px;
+      padding: 30px 20px;
     }
 
     .container {
@@ -33,34 +37,37 @@
       display: flex;
       justify-content: space-between;
       align-items: center;
-      font-size: 0.85rem;
+      font-size: 0.8rem;
       font-family: monospace;
       color: var(--text-muted);
-      margin-bottom: 60px;
+      margin-bottom: 40px;
       border-bottom: 1px solid var(--border-color);
-      padding-bottom: 15px;
+      padding-bottom: 12px;
     }
 
     .badge {
       border: 1px solid var(--border-color);
-      padding: 4px 10px;
+      padding: 4px 12px;
       border-radius: 20px;
       color: var(--accent-pink);
     }
 
-    /* Hero & Content Layout */
+    /* Hero Layout Grid */
     .hero-layout {
       display: grid;
-      grid-template-columns: 1fr 400px;
+      grid-template-columns: 1fr 420px;
       gap: 40px;
       align-items: start;
+      margin-bottom: 50px;
     }
 
     h1 {
-      font-size: 3rem;
+      font-size: 3.2rem;
       line-height: 1.1;
       color: #ffffff;
+      margin-top: 0;
       margin-bottom: 20px;
+      letter-spacing: -1px;
     }
 
     h1 span {
@@ -74,19 +81,146 @@
       margin-bottom: 30px;
     }
 
-    /* Sci-Fi Card Layout Integration */
+    /* Sovereign List Form Box */
+    .sovereign-box {
+      background: var(--bg-surface);
+      border: 1px solid var(--border-color);
+      border-radius: 12px;
+      padding: 25px;
+      margin-bottom: 25px;
+    }
+
+    .sovereign-box h3 {
+      color: #fff;
+      font-size: 0.95rem;
+      text-transform: uppercase;
+      font-family: monospace;
+      margin-top: 0;
+      margin-bottom: 10px;
+      letter-spacing: 0.5px;
+    }
+
+    .sovereign-box p {
+      font-size: 0.85rem;
+      margin-bottom: 15px;
+    }
+
+    .form-group {
+      display: flex;
+      gap: 10px;
+    }
+
+    .form-group input {
+      flex: 1;
+      background: var(--bg-base);
+      border: 1px solid var(--border-color);
+      border-radius: 6px;
+      padding: 12px 15px;
+      color: var(--text-main);
+      font-size: 0.9rem;
+    }
+
+    .form-group input:focus {
+      outline: none;
+      border-color: var(--accent-pink);
+    }
+
+    .btn-secure {
+      background: var(--accent-pink);
+      color: #ffffff;
+      border: none;
+      border-radius: 6px;
+      padding: 12px 20px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: opacity 0.2s;
+    }
+
+    .btn-secure:hover {
+      opacity: 0.9;
+    }
+
+    /* Action Buttons Row */
+    .action-buttons {
+      display: flex;
+      gap: 12px;
+      flex-wrap: wrap;
+      margin-bottom: 40px;
+    }
+
+    .action-btn {
+      background: var(--bg-surface);
+      border: 1px solid var(--border-color);
+      color: var(--text-main);
+      padding: 10px 18px;
+      border-radius: 6px;
+      font-size: 0.9rem;
+      text-decoration: none;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      transition: all 0.2s;
+    }
+
+    .action-btn:hover {
+      border-color: var(--accent-pink);
+      color: #fff;
+    }
+
+    .action-btn.primary {
+      border-color: rgba(255, 51, 102, 0.4);
+    }
+
+    /* Right Column Book Showcase */
+    .book-showcase {
+      background: linear-gradient(145deg, var(--bg-surface) 0%, var(--bg-surface-hover) 100%);
+      border: 1px solid var(--border-color);
+      border-radius: 12px;
+      padding: 25px;
+    }
+
+    .book-cover-placeholder {
+      width: 100%;
+      height: 380px;
+      background: #05070b;
+      border: 1px solid var(--border-color);
+      border-radius: 6px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--text-muted);
+      font-family: monospace;
+      font-size: 0.85rem;
+      margin-bottom: 20px;
+      text-align: center;
+      padding: 20px;
+    }
+
+    /* Option 3: Sci-Fi Card Layout (Integrated Nodes) */
+    .eco-section-title {
+      font-family: monospace;
+      font-size: 0.9rem;
+      color: #fff;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      margin-top: 40px;
+      margin-bottom: 15px;
+      border-bottom: 1px solid var(--border-color);
+      padding-bottom: 8px;
+    }
+
     .eco-card-container { 
       display: flex; 
       flex-direction: column; 
-      gap: 16px; 
-      margin-top: 30px; 
+      gap: 14px; 
+      margin-bottom: 40px;
     }
     
     .eco-card { 
       background: linear-gradient(145deg, var(--bg-surface) 0%, var(--bg-surface-hover) 100%); 
       border: 1px solid var(--border-color); 
       border-radius: 8px; 
-      padding: 20px; 
+      padding: 18px 20px; 
       position: relative; 
       transition: border-color 0.2s;
     }
@@ -103,12 +237,12 @@
       color: var(--text-muted); 
       font-family: monospace; 
       text-transform: uppercase; 
-      margin-bottom: 8px; 
+      margin-bottom: 6px; 
     }
     
     .eco-card-title { 
       color: #ffffff; 
-      font-size: 1.1rem; 
+      font-size: 1.05rem; 
       font-weight: 600; 
       text-decoration: none; 
       display: block; 
@@ -118,12 +252,40 @@
       color: var(--accent-pink);
     }
 
-    /* Right column box matching your theme */
-    .side-panel {
+    /* Bottom Track Grid */
+    .tracks-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: 20px;
+      margin-top: 40px;
+    }
+
+    .track-card {
       background: var(--bg-surface);
       border: 1px solid var(--border-color);
-      border-radius: 12px;
-      padding: 30px;
+      border-radius: 10px;
+      padding: 25px;
+    }
+
+    .track-meta {
+      font-size: 0.75rem;
+      font-family: monospace;
+      color: var(--accent-pink);
+      text-transform: uppercase;
+      margin-bottom: 8px;
+    }
+
+    .track-title {
+      color: #fff;
+      font-size: 1.2rem;
+      font-weight: 600;
+      margin-bottom: 12px;
+    }
+
+    @media (max-width: 900px) {
+      .hero-layout {
+        grid-template-columns: 1fr;
+      }
     }
   </style>
 </head>
@@ -136,14 +298,31 @@
       <div>Sovereign Node // Direct-to-Reader Architecture</div>
     </div>
 
-    <!-- Main Content Section -->
+    <!-- Main Hero Section -->
     <div class="hero-layout">
       <div>
         <h1>Failed Social Media Connections! <span>Stay Online.</span></h1>
         <p>Algorithms dictate what you see. Accounts face sudden bans, restrictions, or algorithmic shadowbans. Having worn the uniform for 20 years to protect fundamental freedoms, I believe in absolute sovereignty. This digital hub serves as our direct line—no corporate tracking, no content filtering.</p>
 
-        <!-- Integrated Sci-Fi Card Layout for your nodes -->
-        <h3 style="color: #fff; font-family: monospace; margin-top: 40px; font-size: 0.9rem; text-transform: uppercase;">// System Modules & Nodes</h3>
+        <!-- Sovereign List Signup Box -->
+        <div class="sovereign-box">
+          <h3>Join The Sovereign List</h3>
+          <p>Get direct dispatches, book drops, and raw essays straight to your inbox without algorithmic middlemen.</p>
+          <div class="form-group">
+            <input type="email" placeholder="Enter secure email address...">
+            <button class="btn-secure">Secure Entry</button>
+          </div>
+        </div>
+
+        <!-- Navigation Action Buttons -->
+        <div class="action-buttons">
+          <a href="/flipbook/index" class="action-btn primary">Launch Flipbook Module &rarr;</a>
+          <a href="#" class="action-btn">System Diagnostics</a>
+          <a href="#" class="action-btn">Test Audio Feed</a>
+        </div>
+
+        <!-- Option 3: Sci-Fi Card Layout (Wiki/Database Sync Integration) -->
+        <div class="eco-section-title">// Database Sync Nodes (Option 3 Layout)</div>
         <div class="eco-card-container">
           <div class="eco-card">
             <div class="eco-card-meta">// MODULE // ID: 01</div>
@@ -156,13 +335,36 @@
         </div>
       </div>
 
-      <!-- Right Side Showcase Panel -->
-      <div class="side-panel">
-        <div style="font-family: monospace; font-size: 0.75rem; color: var(--accent-pink); margin-bottom: 10px;">// NEXT LAUNCH</div>
-        <h3 style="color: #fff; margin-top: 0; font-size: 1.25rem;">Silent Resonance & Chrono Series</h3>
+      <!-- Right Column Book Showcase -->
+      <div class="book-showcase">
+        <div style="font-family: monospace; font-size: 0.75rem; color: var(--accent-pink); margin-bottom: 12px; text-transform: uppercase;">// Next Launch</div>
+        <div class="book-cover-placeholder">
+          [ Silent Resonance Book Cover Artwork ]
+        </div>
+        <h3 style="color: #fff; margin-top: 0; margin-bottom: 10px; font-size: 1.25rem;">Silent Resonance & Chrono Series</h3>
         <p style="font-size: 0.9rem; margin-bottom: 0;">Immersive tales detailing complex mechanics, time travel, and star systems crafted for direct reader engagement.</p>
       </div>
     </div>
+
+    <!-- Bottom Content Tracks -->
+    <div class="tracks-grid">
+      <div class="track-card">
+        <div class="track-meta">// Track 01</div>
+        <div class="track-title">Sci-Fi Writing Vault</div>
+        <p style="font-size: 0.9rem; margin-bottom: 0;">Core manuscripts, universe worldbuilding lore, and futuristic narrative chapters.</p>
+      </div>
+      <div class="track-card">
+        <div class="track-meta">// Track 02</div>
+        <div class="track-title">Poetry & Short Stories</div>
+        <p style="font-size: 0.9rem; margin-bottom: 0;">Independent blog posts and conceptual pieces tailored for direct reader engagement.</p>
+      </div>
+      <div class="track-card">
+        <div class="track-meta">// Track 03</div>
+        <div class="track-title">Sovereign Resources</div>
+        <p style="font-size: 0.9rem; margin-bottom: 0;">Independent digital assets, study guides, and cross-platform publishing links.</p>
+      </div>
+    </div>
+
   </div>
 
 </body>
