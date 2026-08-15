@@ -166,59 +166,6 @@
       border-color: rgba(255, 51, 102, 0.4);
     }
 
-    /* Option 3: Sci-Fi Card Layout (System Modules & Nodes) */
-    .eco-section-title {
-      font-family: monospace;
-      font-size: 0.8rem;
-      color: var(--text-muted);
-      text-transform: uppercase;
-      letter-spacing: 1px;
-      margin-bottom: 15px;
-    }
-
-    .eco-card-container { 
-      display: flex; 
-      flex-direction: column; 
-      gap: 14px; 
-      margin-bottom: 40px;
-    }
-    
-    .eco-card { 
-      background: linear-gradient(145deg, var(--bg-surface) 0%, var(--bg-surface-hover) 100%); 
-      border: 1px solid var(--border-color); 
-      border-radius: 8px; 
-      padding: 18px 20px; 
-      position: relative; 
-      transition: border-color 0.2s;
-    }
-    
-    .eco-card::before { 
-      content: ''; 
-      position: absolute; 
-      top: 0; left: 0; width: 3px; height: 100%; 
-      background: var(--accent-pink); 
-    }
-    
-    .eco-card-meta { 
-      font-size: 0.7rem; 
-      color: var(--text-muted); 
-      font-family: monospace; 
-      text-transform: uppercase; 
-      margin-bottom: 6px; 
-    }
-    
-    .eco-card-title { 
-      color: #ffffff; 
-      font-size: 1.05rem; 
-      font-weight: 600; 
-      text-decoration: none; 
-      display: block; 
-    }
-    
-    .eco-card-title:hover {
-      color: var(--accent-pink);
-    }
-
     /* Right Column Book Showcase */
     .book-showcase {
       background: linear-gradient(145deg, var(--bg-surface) 0%, var(--bg-surface-hover) 100%);
@@ -309,19 +256,6 @@
           <a href="/flipbook/index" class="action-btn primary">Launch Flipbook Module &rarr;</a>
           <a href="#" class="action-btn">System Diagnostics</a>
           <a href="#" class="action-btn">Test Audio Feed</a>
-        </div>
-
-        <!-- Option 3: Sci-Fi Card Layout Integration -->
-        <div class="eco-section-title">// System Modules & Nodes</div>
-        <div class="eco-card-container">
-          <div class="eco-card">
-            <div class="eco-card-meta">// Module // ID: 01</div>
-            <a href="/chat" class="eco-card-title">Starship Chat Hub</a>
-          </div>
-          <div class="eco-card">
-            <div class="eco-card-meta">// Module // ID: 02</div>
-            <a href="/flipbook/index" class="eco-card-title">Silent Resonance Cyberpunk Flipbook</a>
-          </div>
         </div>
       </div>
 
